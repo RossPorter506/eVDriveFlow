@@ -33,7 +33,7 @@ class EVSEDummyController(IEVSEController):
     def __init__(self):
         super(EVSEDummyController, self).__init__(EVSEEmulator(evsemaximum_voltage=DcRationalNumberType(2, 4),
                                                                evseminimum_voltage=DcRationalNumberType(0, 250),
-                                                               evsemaximum_charge_power=DcRationalNumberType(3, 11),
+                                                               evsemaximum_charge_power=DcRationalNumberType(3, 80),
                                                                evseminimum_charge_power=DcRationalNumberType(0, 500)),
                                                   PhysicalInterface("evse"))
 
