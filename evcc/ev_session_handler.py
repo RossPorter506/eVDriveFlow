@@ -48,7 +48,7 @@ class EVSessionHandler(SessionHandler):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         tcp_transport, tcp_protocol = \
-            get_tcp_client(udp_protocol.tcp_server_address + interface, udp_protocol.tcp_server_port, self)
+            get_tcp_client(udp_protocol.tcp_server_address, udp_protocol.tcp_server_port, self)
 
     @property
     def udp_port(self):

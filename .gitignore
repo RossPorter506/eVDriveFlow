@@ -4,3 +4,9 @@ __pycache__/
 pids
 *.pid
 *.log
+
+*.pem
+
+*.csr
+
+*.key
