@@ -15,6 +15,7 @@
 from secc.states.evse_state import EVSEState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ServiceSelectionRes, MessageHeaderType, ResponseCodeType
+from shared.global_values import IAM_SERVICE_ID
 import time
 
 
@@ -26,6 +27,9 @@ class ProcessServiceSelectionRequest(EVSEState):
         if (payload.selected_vaslist is not None):
             for service in payload.selected_vaslist.selected_service:
                 # Deal with each VAS as necessary
+                if (str(service.service_id) == IAM_SERVICE_ID):
+                    self.controller.data_model.IAM_Module.configure(service.parameter_set_id)
+
         extra_data = {}
         response = ServiceSelectionRes()
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))

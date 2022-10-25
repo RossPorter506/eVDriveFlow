@@ -15,6 +15,7 @@
 from evcc.states.ev_state import EVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ServiceSelectionReq, ServiceDetailReq, MessageHeaderType, SelectedServiceType, SelectedServiceListType
+from shared.global_values import IAM_SERVICE_ID
 import time
 
 
@@ -28,6 +29,9 @@ class WaitForServiceDetailResponse(EVState):
             index = self.controller.data_model.vas_services_to_detail.index(payload.service_id)
             self.controller.data_model.vas_services_to_detail.pop(index)
             service = SelectedServiceType(payload.service_id, 1) # TODO: Define ParameterSetID
+            
+            if service.service_id == IAM_SERVICE_ID:
+                self.controller.data_model.useIAM = True
 
             # Create/append list of VASes to include in ServiceSelectionRequest
             if self.controller.data_model.selected_vaslist is None:

@@ -15,7 +15,7 @@
 from typing import Optional, List
 from shared.utils import rational_to_float, float_to_dc_rational, negative_dc_rational
 from secc.evse_controller import IEVSEController, DcEVSEDataModel
-from shared.global_values import V2G_CI_MSG_DC_NAMESPACE
+from shared.global_values import V2G_CI_MSG_DC_NAMESPACE, IAM_SERVICE_ID
 from shared.xml_classes.app_protocol import AppProtocolType
 from shared.xml_classes.common_messages import ServiceListType, ServiceType, AuthorizationType, \
     ServiceParameterListType, ParameterSetType, ParameterType, DynamicSeresControlModeType
@@ -24,7 +24,6 @@ from shared.xml_classes.dc import BptDcCpdresEnergyTransferMode, RationalNumberT
 from dataclasses import dataclass, field
 from shared.charge_controller_interface import ChargeControllerInterface
 from shared.physical_interface import PhysicalInterface
-
 
 class EVSEDummyController(IEVSEController):
     """Class that implements the DcBptDynamic EVSE controller.
@@ -105,10 +104,22 @@ class EVSEEmulator(DcEVSEDataModel):
         self.certificate_installation_service = False
         self.energy_transfer_service_list = ServiceListType([ServiceType(6, False)])
         self.service_renegotiation_supported = False
-        self.services = {"6": ServiceParameterListType([ParameterSetType(1, [ParameterType(
-            name="Connector", int_value=2), ParameterType(name="ControlMode", int_value=2), ParameterType(
-            name="MobilityNeedsMode", int_value=2), ParameterType(name="Pricing", int_value=0), ParameterType(
-            name="BPTChannel", int_value=1), ParameterType(name="GeneratorMode", int_value=1)])])}
+        self.services = {"6": ServiceParameterListType([ParameterSetType(1,[
+                                    ParameterType(name="Connector", int_value=2), 
+                                    ParameterType(name="ControlMode", int_value=2), 
+                                    ParameterType(name="MobilityNeedsMode", int_value=2), 
+                                    ParameterType(name="Pricing", int_value=0), 
+                                    ParameterType(name="BPTChannel", int_value=1), 
+                                    ParameterType(name="GeneratorMode", int_value=1)]
+                                )]),
+                         IAM_SERVICE_ID: ServiceParameterListType([ParameterSetType(1,[
+                                    ParameterType(name="ProtocolVersion", int_value=1), 
+                                    ParameterType(name="BoottimeAttestationSupport", bool_value=True),
+                                    ParameterType(name="PreChargeRuntimeAttestationSupport", bool_value=False),
+                                    ParameterType(name="IntraChargeRuntimeAttestationSupport", bool_value=False),
+                                    ParameterType(name="IntraChargePushNotifyRuntimeAttestationSupport", bool_value=False),]
+                                )])}
+        self.vaslist = ServiceListType([ServiceType(IAM_SERVICE_ID, True)])
         max_current = rational_to_float(self.evsemaximum_charge_power)
         max_current /= rational_to_float(self.evseminimum_voltage)
         self.evsemaximum_charge_current = self.evsemaximum_discharge_current = float_to_dc_rational(max_current)

@@ -71,3 +71,6 @@ DC_SECC_MSG_PERFORMANCE_TIME = {"DcCableCheckReq": 1.5, "DcPreChargeReq": 1.5, "
                                 "DcWeldingDetectionReq": 1.5, "DcChargeParameterDiscoveryReq": 1.5}  # same as above
 DC_EVCC_SEQUENCE_PERFORMANCE_TIME = {"DcChargeLoopReq": 0.25}
 DC_SECC_SEQUENCE_TIMEOUT = {"DcChargeLoopRes": 0.5}
+
+#
+IAM_SERVICE_ID = "12345"

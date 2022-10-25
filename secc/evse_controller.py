@@ -25,6 +25,8 @@ from configparser import ConfigParser
 from shared.controller import ControllerInterface
 from shared.gui import GUI
 
+# Integrity Attestation Module
+from secc.iam import IAM
 
 @dataclass
 class EVSEDataModel:
@@ -51,6 +53,8 @@ class EVSEDataModel:
     services: List[ServiceParameterListType] = None
     # ProcessPowerDelivery
     evsestatus: Optional[EvsestatusType] = None
+
+    IAM_Module = IAM()
 
     def attach(self, observer):
         self._observers.append(observer)
