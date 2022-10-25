@@ -45,8 +45,11 @@ class EVDataModel:
     pn_c_areq_authorization_mode: Optional[PnCAreqAuthorizationModeType] = None
     # ServiceDiscovery
     supported_service_ids: Optional[ServiceIdlistType] = None
+    supported_vas_service_ids: Optional[ServiceIdlistType] = None
     # ServiceDetail
     service_id: Optional[int] = None
+    vas_services_to_detail: List[int] = field(default_factory=list) # Filled from ServiceDiscovery, each entry generates a ServiceDetail request.
+
     # ServiceSelection
     selected_energy_transfer_service: Optional[SelectedServiceType] = None
     selected_vaslist: Optional[SelectedServiceListType] = None

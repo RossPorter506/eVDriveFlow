@@ -30,6 +30,12 @@ class WaitForServiceDiscoveryResponse(EVState):
             if service.service_id in self.controller.data_model.supported_service_ids.service_id:
                 # TODO input from HMI
                 request.service_id = 6
+        
+        # Store VAS services to query later during ServiceDetail state.
+        if payload.vaslist is not None:
+            for vas_service in payload.vaslist.service:
+                if str(vas_service.service_id) in self.controller.data_model.supported_vas_service_ids.service_id:
+                    self.controller.data_model.vas_services_to_detail.append(vas_service.service_id)
         reaction = SendMessage()
         reaction.extra_data = extra_data
         reaction.message = request

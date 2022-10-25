@@ -29,6 +29,7 @@ class ProcessServiceDiscoveryRequest(EVSEState):
         response.response_code = ResponseCodeType.OK
         response.service_renegotiation_supported = self.controller.data_model.service_renegotiation_supported
         response.energy_transfer_service_list = self.controller.data_model.energy_transfer_service_list
+        response.vaslist = self.controller.data_model.vaslist
         reaction = SendMessage()
         reaction.extra_data = extra_data
         reaction.message = response

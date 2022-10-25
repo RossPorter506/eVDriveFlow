@@ -23,6 +23,9 @@ class ProcessServiceSelectionRequest(EVSEState):
         super(ProcessServiceSelectionRequest, self).__init__(name="ProcessServiceSelectionReq")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
+        if (payload.selected_vaslist is not None):
+            for service in payload.selected_vaslist.selected_service:
+                # Deal with each VAS as necessary
         extra_data = {}
         response = ServiceSelectionRes()
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
