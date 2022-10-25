@@ -124,7 +124,7 @@ class TCPClientProtocol(asyncio.Protocol):
                 xml = self.message_handler.exi_to_v2g_common_msg(payload)
             else:
                 raise Exception("Unknown payload type")
-            logger.info("Message successfully decoded " + xml)
+            logger.debug("Message successfully decoded " + xml)
             xml_object = self.message_handler.unmarshall(xml)
             request_type = type(xml_object).__name__
             logger.info("Received %s.", request_type)
