@@ -21,7 +21,7 @@ from shared.global_values import PROTOCOL_VERSION
 from shared.log import logger
 import lxml
 from shared.global_values import SDP_PAYLOAD_TYPES, MAX_PAYLOAD_LENGTH, APP_PROTOCOL_EXIG, COMMON_MESSAGES_EXIG, \
-    DC_MESSAGES_EXIG, APP_PROTOCOL_XSD, COMMON_MESSAGES_XSD, DC_MESSAGES_XSD
+    DC_MESSAGES_EXIG, APP_PROTOCOL_XSD, COMMON_MESSAGES_XSD, DC_MESSAGES_XSD, IAM_MESSAGES_XSD
 
 import jpype
 import os
@@ -107,10 +107,14 @@ class MessageHandler(metaclass=Singleton):
     dc_schema = open_exi_schema(DC_MESSAGES_EXIG)
     dc_grammar_cache = GrammarCache(dc_schema, options)
 
+    iam_schema = open_exi_schema(IAM_MESSAGES_EXIG)
+    iam_grammar_cache = GrammarCache(iam_schema, options)
+
     def __init__(self):
         self.xml_SAP_validator = lxml.etree.XMLSchema(file=APP_PROTOCOL_XSD)
         self.xml_Common_validator = lxml.etree.XMLSchema(file=COMMON_MESSAGES_XSD)
         self.xml_DC_validator = lxml.etree.XMLSchema(file=DC_MESSAGES_XSD)
+        self.xml_IAM_validator = lxml.etree.XMLSchema(file=IAM_MESSAGES_XSD)
         self.parser = XmlParser(context=XmlContext())
         self.config = SerializerConfig(pretty_print=True)
         self.serializer = XmlSerializer(config=self.config)
@@ -190,6 +194,8 @@ class MessageHandler(metaclass=Singleton):
                 t.setGrammarCache(MessageHandler.common_grammar_cache);
             elif type_msg == "DC":
                 t.setGrammarCache(MessageHandler.dc_grammar_cache);
+            elif type_msg == "IAM":
+                t.setGrammarCache(MessageHandler.iam_grammar_cache);
             else:
                 raise Exception("Unknown message type")
             t.setOutputStream(output);
@@ -272,6 +278,14 @@ class MessageHandler(metaclass=Singleton):
     def exi_to_v2g_dc_msg(self, exi_contents) -> str:
         logger.info("DC message to be decoded")
         return self.decode(exi_contents, "DC")
+    
+    def iam_to_exi(self, xml_contents) -> bytes:
+        logger.info("IAM message to be encoded")
+        if self.is_xml_valid(xml_contents, 'IAM'):
+            logger.info("Message is valid against Schema XSD")
+            return self.encode(xml_contents, "IAM")
+        else:
+            raise Exception("XML is not valid against schema")
 
 
     def unmarshall(self, xml):
@@ -309,6 +323,8 @@ class MessageHandler(metaclass=Singleton):
             validator = self.xml_Common_validator
         elif msg_type == 'DC':
             validator = self.xml_DC_validator
+        elif msg_type == 'IAM':
+            validator = self.xml_IAM_validator
         try:
             validator.assertValid(xml_file)
             is_valid = True

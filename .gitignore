@@ -10,3 +10,5 @@ pids
 *.csr
 
 *.key
+
+.vscode/

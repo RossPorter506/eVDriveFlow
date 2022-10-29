@@ -30,8 +30,8 @@ class WaitForServiceDetailResponse(EVState):
             self.controller.data_model.vas_services_to_detail.pop(index)
             service = SelectedServiceType(payload.service_id, 1) # TODO: Define ParameterSetID
             
-            if service.service_id == IAM_SERVICE_ID:
-                self.controller.data_model.useIAM = True
+            if str(service.service_id) == IAM_SERVICE_ID:
+                self.controller.data_model.using_IAM = True
 
             # Create/append list of VASes to include in ServiceSelectionRequest
             if self.controller.data_model.selected_vaslist is None:
@@ -52,6 +52,8 @@ class WaitForServiceDetailResponse(EVState):
             request.selected_energy_transfer_service = SelectedServiceType(self.controller.data_model.selected_energy_transfer_service, 1)
             if self.controller.data_model.selected_vaslist: # Append selected VASes to packet, if we want any.
                 request.selected_vaslist = self.controller.data_model.selected_vaslist
+            if self.controller.data_model.using_IAM is None:
+                self.controller.data_model.using_IAM = False
 
         request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         extra_data = {}

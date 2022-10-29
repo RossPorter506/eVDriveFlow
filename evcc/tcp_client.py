@@ -169,6 +169,9 @@ class TCPClientProtocol(asyncio.Protocol):
                 elif reaction.msg_type == "SupportedAppProtocol":
                     exi = self.message_handler.supported_app_to_exi(xml_string)
                     message = bytes(SupportedAppMessage() / EXIPayload(payloadContent=exi))
+                elif reaction.msg_type == "IAM":
+                    exi = self.message_handler.iam_to_exi(xml_string)
+                    message = bytes(IAMMessage() / EXIPayload(payloadContent=exi))
                 else:
                     raise Exception("Unknown message type")
                 logger.debug("Encoded EXI message: " + hexdump.dump(exi, len(exi), ' '))

@@ -76,6 +76,13 @@ class SDPMessage(V2GTPMessage):
     def fill(self):
         raise NotImplementedError
 
+class IAMMessage(V2GTPMessage):
+    """This is a class that represents IAM Protocol messages. Inherits from V2GTPMessage.
+
+    """
+    def fill(self):
+        raise NotImplementedError
+
 
 # This part binds the layers together. In each message type, there is a spcific payload. When creating the packets, we
 # need to do it this way: EXIMessage()/EXIPayload. When doing so, thanks to the code below, the payloadType value will
@@ -84,6 +91,7 @@ class SDPMessage(V2GTPMessage):
 bind_layers(EXIMessage, EXIPayload, {"payloadType": 0x8002})
 bind_layers(SupportedAppMessage, EXIPayload, {"payloadType": 0x8001})
 bind_layers(EXIDCMessage, EXIPayload, {"payloadType": 0x8004})
+bind_layers(IAMMessage, EXIPayload, {"payloadType": 0x8008})
 bind_layers(SDPMessage, SDPReqPayload, {'payloadType': 0x9000})
 bind_layers(SDPMessage, SDPResPayload, {'payloadType': 0x9001})
 bind_layers(UDP, SDPMessage, {"dport": UDP_SERVER_PORT})

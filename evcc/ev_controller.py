@@ -49,6 +49,11 @@ class EVDataModel:
     # ServiceDetail
     service_id: Optional[int] = None
     vas_services_to_detail: List[int] = field(default_factory=list) # Filled from ServiceDiscovery, each entry generates a ServiceDetail request.
+    
+    # IAM
+    using_IAM: Optional[bool] = None # Whether the SECC supports IAM or not. None (i.e. 'Don't Know') until service discovery and service detail, then True or False respectively
+    attestation_success: Optional[bool] = None # Whether the SECC successfully attested to us or not. None until attestation is performed, then True or False.
+    provided_nonce: Optional[bytes] = None # 8-byte nonce provided to the SECC, used to compare with result later
 
     # ServiceSelection
     selected_energy_transfer_service: Optional[SelectedServiceType] = None
