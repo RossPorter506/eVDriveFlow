@@ -12,3 +12,5 @@ pids
 *.key
 
 .vscode/
+
+OpenEXI/

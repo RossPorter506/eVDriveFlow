@@ -23,7 +23,7 @@ from shared.reaction_message import PauseSession, TerminateSession, SendMessage
 from shared.xml_classes.app_protocol import SupportedAppProtocolReq
 from shared.global_values import EVCC_CERTCHAIN, EVCC_KEYFILE, PASSPHRASE, SECC_CERTIFICATE_AUTHORITY, SECURITY_PROTOCOL
 import asyncio
-from shared.messages import EXIMessage, V2GTPMessage, SupportedAppMessage, EXIDCMessage
+from shared.messages import EXIMessage, V2GTPMessage, SupportedAppMessage, EXIDCMessage, IAMMessage
 from shared.log import logger
 from evcc.event_handler import KeyboardListener
 from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType
