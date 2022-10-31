@@ -454,6 +454,17 @@ class EVSEMainWindow(GUI):
         self.cb8.setObjectName("DcChargeParameterDiscovery")
         self.verticalLayout.addWidget(self.cb8)
         self.check_boxes.append(self.cb8)
+
+        ############ # Manually added #############
+        self.cb16 = QtWidgets.QCheckBox(self.infos_tab)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.cb16.setFont(font)
+        self.cb16.setObjectName("Attestation")
+        self.verticalLayout.addWidget(self.cb16)
+        self.check_boxes.append(self.cb16)
+        ###########################################
+
         self.cb9 = QtWidgets.QCheckBox(self.infos_tab)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -635,6 +646,7 @@ class EVSEMainWindow(GUI):
         self.cb13.setText(_translate("EVSEMainWindow", "DcPreCharge"))
         self.cb12.setText(_translate("EVSEMainWindow", "PowerDelivery"))
         self.cb15.setText(_translate("EVSEMainWindow", "DcChargeLoop"))
+        self.cb16.setText(_translate("EVSEMainWindow", "Attestation")) # Manually added
         self.cb14.setText(_translate("EVSEMainWindow", "DcWeldingDetection"))
         self.cb11.setText(_translate("EVSEMainWindow", "SessionStop"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.infos_tab), _translate("EVSEMainWindow", "Information"))

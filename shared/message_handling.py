@@ -230,6 +230,8 @@ class MessageHandler(metaclass=Singleton):
                 r.setGrammarCache(MessageHandler.common_grammar_cache);
             elif type_msg == "DC":
                 r.setGrammarCache(MessageHandler.dc_grammar_cache);
+            elif type_msg == "IAM":
+                r.setGrammarCache(MessageHandler.iam_grammar_cache);
             else:
                 raise Exception("Unknown message type")
 
@@ -279,8 +281,13 @@ class MessageHandler(metaclass=Singleton):
         logger.info("DC message to be decoded")
         return self.decode(exi_contents, "DC")
     
-    def iam_to_exi(self, xml_contents) -> bytes:
+    def exi_to_iam_msg(self, exi_contents) -> str:
+        logger.info("IAM message to be decoded")
+        return self.decode(exi_contents, "IAM")
+    
+    def iam_msg_to_exi(self, xml_contents) -> bytes:
         logger.info("IAM message to be encoded")
+        print(xml_contents)
         if self.is_xml_valid(xml_contents, 'IAM'):
             logger.info("Message is valid against Schema XSD")
             return self.encode(xml_contents, "IAM")

@@ -91,7 +91,7 @@ class IAMMessage(V2GTPMessage):
 bind_layers(EXIMessage, EXIPayload, {"payloadType": 0x8002})
 bind_layers(SupportedAppMessage, EXIPayload, {"payloadType": 0x8001})
 bind_layers(EXIDCMessage, EXIPayload, {"payloadType": 0x8004})
-bind_layers(IAMMessage, EXIPayload, {"payloadType": 0x8008})
+bind_layers(IAMMessage, EXIPayload, {"payloadType": 0x8110})
 bind_layers(SDPMessage, SDPReqPayload, {'payloadType': 0x9000})
 bind_layers(SDPMessage, SDPResPayload, {'payloadType': 0x9001})
 bind_layers(UDP, SDPMessage, {"dport": UDP_SERVER_PORT})

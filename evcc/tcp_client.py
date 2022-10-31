@@ -78,6 +78,8 @@ class TCPClientProtocol(asyncio.Protocol):
             packet = SupportedAppMessage(data)
         elif "dc" in self.session.session_parameters.request_type.lower():
             packet = EXIDCMessage(data)
+        elif "iam" in self.session.session_parameters.request_type.lower():
+            packet = IAMMessage(data)
         else:
             packet = EXIMessage(data)
         self.process_incoming_message(packet)
@@ -122,6 +124,8 @@ class TCPClientProtocol(asyncio.Protocol):
                 xml = self.message_handler.exi_to_v2g_dc_msg(payload)
             elif message_type == 0x8002:
                 xml = self.message_handler.exi_to_v2g_common_msg(payload)
+            elif message_type == 0x8110:
+                xml = self.message_handler.exi_to_iam_msg(payload)
             else:
                 raise Exception("Unknown payload type")
             logger.debug("Message successfully decoded " + xml)
@@ -170,7 +174,7 @@ class TCPClientProtocol(asyncio.Protocol):
                     exi = self.message_handler.supported_app_to_exi(xml_string)
                     message = bytes(SupportedAppMessage() / EXIPayload(payloadContent=exi))
                 elif reaction.msg_type == "IAM":
-                    exi = self.message_handler.iam_to_exi(xml_string)
+                    exi = self.message_handler.iam_msg_to_exi(xml_string)
                     message = bytes(IAMMessage() / EXIPayload(payloadContent=exi))
                 else:
                     raise Exception("Unknown message type")

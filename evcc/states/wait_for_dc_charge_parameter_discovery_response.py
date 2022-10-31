@@ -16,8 +16,8 @@ from evcc.states.ev_state import DcEVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 import time, os
 
-from shared.xml_classes.common_messages import ScheduleExchangeReq, MessageHeaderType
-from shared.xml_classes.common_messages.IAM_messages import AttestationReq
+from shared.xml_classes.common_messages import ScheduleExchangeReq
+from shared.xml_classes.iam import AttestationReq, MessageHeaderType
 
 IAM_NONCE_SIZE=8 # TODO: Figure out where to put this
 

@@ -28,6 +28,7 @@ from secc.states.process_session_setup_request import ProcessSessionSetupRequest
 from secc.states.process_session_stop_request import ProcessSessionStopRequest
 from secc.states.process_supported_app_protocol_request import ProcessSupportedAppProtocolRequest
 from secc.states.process_dc_welding_detection_request import ProcessDcWeldingDetectionRequest
+from secc.states.process_attestation_request import ProcessAttestationRequest
 from shared.session import CommunicationSession
 import secrets
 from dataclasses import dataclass
@@ -59,6 +60,7 @@ class EVSESession(CommunicationSession):
         service_detail_state = ProcessServiceDetailRequest()
         service_selection_state = ProcessServiceSelectionRequest()
         charge_parameter_discovery_state = ProcessDcChargeParameterDiscoveryRequest()
+        attestation_state = ProcessAttestationRequest()
         schedule_exchange_state = ProcessScheduleExchangeRequest()
         cable_check_state = ProcessDcCableCheckRequest()
         pre_charge_state = ProcessDcPreChargeRequest()
@@ -68,7 +70,7 @@ class EVSESession(CommunicationSession):
         session_stop_state = ProcessSessionStopRequest()
         states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, authorization_state,
                   service_discovery_state, service_detail_state, service_selection_state,
-                  charge_parameter_discovery_state, schedule_exchange_state, cable_check_state, pre_charge_state,
+                  charge_parameter_discovery_state, attestation_state, schedule_exchange_state, cable_check_state, pre_charge_state,
                   welding_detection_state, power_delivery_state, dc_charge_loop_state, session_stop_state]
         exitable_states = states[2:-3]
         # Transitions are defined like this: trigger, src, dst, conditions, unless, before, after, prepare
@@ -81,7 +83,9 @@ class EVSESession(CommunicationSession):
             ["next_message", service_discovery_state, service_detail_state],
             ["next_message", service_detail_state, service_selection_state],
             ["next_message", service_selection_state, charge_parameter_discovery_state],
-            ["next_message", charge_parameter_discovery_state, schedule_exchange_state],
+            ["next_message", charge_parameter_discovery_state, schedule_exchange_state, lambda: not self.controller.data_model.IAM_Module.enabled],
+            ["next_message", charge_parameter_discovery_state, attestation_state, lambda: self.controller.data_model.IAM_Module.enabled],
+            ["next_message", attestation_state, cable_check_state],
             ["next_message", schedule_exchange_state, cable_check_state],
             ["next_message", cable_check_state, pre_charge_state],
             ["next_message", pre_charge_state, power_delivery_state],
