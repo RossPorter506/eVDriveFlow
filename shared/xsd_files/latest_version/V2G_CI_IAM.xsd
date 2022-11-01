@@ -29,7 +29,7 @@
 	</xs:simpleType>
 	<xs:simpleType name="EvidenceType">
 		<xs:restriction base="xs:hexBinary">
-			<xs:length value="40"/>
+			<xs:length value="32"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="SignatureType">

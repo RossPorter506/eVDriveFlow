@@ -17,21 +17,21 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ResponseCodeType
 from shared.xml_classes.iam import AttestationRes, MessageHeaderType
 import time
-from ecdsa import SigningKey
 
-EVIDENCE_SIZE_BYTES = 40
+from ecdsa import SigningKey
+from IAM.IAM import hash_secc_software
 
 class ProcessAttestationRequest(EVSEState):
     def __init__(self):
         super(ProcessAttestationRequest, self).__init__(name="ProcessAttestationReq")
-        with open("../shared/certificates/IAM_keys/secc_secure_key.pem", "r") as secure_key_file:
-            self.secc_secure_key = SigningKey.from_pem(secure_key_file.read())
+        with open("../shared/certificates/IAM_keys/secc_private_attestation_key.pem", "r") as secure_key_file:
+            self.secc_secure_key = SigningKey.from_pem(secure_key_file.read()) # In practise this key should not be accessible outside the TPM.
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         extra_data = {}
         response = AttestationRes()
-        response.evidence = int(1).to_bytes(EVIDENCE_SIZE_BYTES, "big") #TODO: placeholder
-        response.signature = self.secc_secure_key.sign_deterministic(response.evidence)
+        response.evidence = hash_secc_software()
+        response.signature = self.secc_secure_key.sign_deterministic(payload.challenge_nonce + response.evidence)
         response.response_code = ResponseCodeType.OK
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()

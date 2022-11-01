@@ -23,8 +23,10 @@ from ecdsa import VerifyingKey, BadSignatureError
 class WaitForAttestationResponse(DcEVState):
     def __init__(self):
         super(WaitForAttestationResponse, self).__init__(name="WaitForAttestationRes")
-        with open("../shared/certificates/IAM_keys/secc_public_key.pem", "r") as pub_key_file:
+        with open("../shared/certificates/IAM_keys/secc_public_attestation_key.pem", "r") as pub_key_file:
             self.secc_public_key = VerifyingKey.from_pem(pub_key_file.read())
+        with open("../IAM/secc.sha256", "rb") as f:
+            self.expected_hash = f.read()
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         if payload.evidence and payload.signature \
@@ -32,12 +34,8 @@ class WaitForAttestationResponse(DcEVState):
             logger.info('Attestation Successful. Continuing session.')
 
             request = ScheduleExchangeReq()
-            evse_data = payload.bpt_dc_cpdres_energy_transfer_mode
-            request.dynamic_sereq_control_mode = self.controller.data_model.get_dynamic_sereq_control_mode()
-            self.controller.data_model.evsemaximum_charge_power = evse_data.evsemaximum_charge_power
-            self.controller.data_model.evsemaximum_discharge_power = evse_data.evsemaximum_discharge_power
             request.maximum_supporting_points = 1024
-            # TODO: handle evse data, only max power is handled now for the hmi
+            request.dynamic_sereq_control_mode = self.controller.data_model.get_dynamic_sereq_control_mode()
         else: # attestation failed - SECC possibly compromised
             logger.warn('Attestation Failed. Ending session.')
             self.controller.stop() # Signal rest of system to wind down
@@ -56,17 +54,13 @@ class WaitForAttestationResponse(DcEVState):
         reaction.msg_type = "Common"
         return reaction
 
-    def _verify(self, message: bytes, sig: bytes) -> bool:
+    def _verify(self, hsh: bytes, sig: bytes) -> bool:
         try:
-            signature_correct = self.secc_public_key.verify(sig, message)
+            signature_correct = self.secc_public_key.verify(sig, self.controller.data_model.challenge_nonce + hsh)
         except BadSignatureError:
             signature_correct = False
-        
-        nonce = message[:8]
-        hsh = message[8:]
 
-        nonce_correct = (nonce == self.controller.data_model.provided_nonce)
-        hash_correct = True #(hsh == self.controller.data_model.expected_hash) # TODO: Generate expected hash
+        hash_correct = (hsh == self.expected_hash)
 
-        return all([signature_correct, nonce_correct, hash_correct])
+        return all([signature_correct, hash_correct])
     
