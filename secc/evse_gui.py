@@ -17,10 +17,10 @@ from shared.gui import GUI
 from shared.custom_canvas import CustomCanvas
 from PyQt5 import QtCore, QtGui, QtWidgets
 from superqt import QLabeledSlider
-from secc.evse_dummy_controller import EVSEDummyController
+from evse_dummy_controller import EVSEDummyController
 from shared.utils import float_to_dc_rational, rational_to_float
 from shared.threading import Worker
-from secc.start_evse import start_evse
+from start_evse import start_evse
 
 
 class EVSEMainWindow(GUI):
@@ -454,6 +454,17 @@ class EVSEMainWindow(GUI):
         self.cb8.setObjectName("DcChargeParameterDiscovery")
         self.verticalLayout.addWidget(self.cb8)
         self.check_boxes.append(self.cb8)
+
+        ############ # Manually added #############
+        self.cb16 = QtWidgets.QCheckBox(self.infos_tab)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.cb16.setFont(font)
+        self.cb16.setObjectName("Attestation")
+        self.verticalLayout.addWidget(self.cb16)
+        self.check_boxes.append(self.cb16)
+        ###########################################
+
         self.cb9 = QtWidgets.QCheckBox(self.infos_tab)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -635,6 +646,7 @@ class EVSEMainWindow(GUI):
         self.cb13.setText(_translate("EVSEMainWindow", "DcPreCharge"))
         self.cb12.setText(_translate("EVSEMainWindow", "PowerDelivery"))
         self.cb15.setText(_translate("EVSEMainWindow", "DcChargeLoop"))
+        self.cb16.setText(_translate("EVSEMainWindow", "Attestation")) # Manually added
         self.cb14.setText(_translate("EVSEMainWindow", "DcWeldingDetection"))
         self.cb11.setText(_translate("EVSEMainWindow", "SessionStop"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.infos_tab), _translate("EVSEMainWindow", "Information"))

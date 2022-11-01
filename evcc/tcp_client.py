@@ -23,7 +23,7 @@ from shared.reaction_message import PauseSession, TerminateSession, SendMessage
 from shared.xml_classes.app_protocol import SupportedAppProtocolReq
 from shared.global_values import EVCC_CERTCHAIN, EVCC_KEYFILE, PASSPHRASE, SECC_CERTIFICATE_AUTHORITY, SECURITY_PROTOCOL
 import asyncio
-from shared.messages import EXIMessage, V2GTPMessage, SupportedAppMessage, EXIDCMessage
+from shared.messages import EXIMessage, V2GTPMessage, SupportedAppMessage, EXIDCMessage, IAMMessage
 from shared.log import logger
 from evcc.event_handler import KeyboardListener
 from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType
@@ -78,6 +78,8 @@ class TCPClientProtocol(asyncio.Protocol):
             packet = SupportedAppMessage(data)
         elif "dc" in self.session.session_parameters.request_type.lower():
             packet = EXIDCMessage(data)
+        elif "iam" in self.session.session_parameters.request_type.lower():
+            packet = IAMMessage(data)
         else:
             packet = EXIMessage(data)
         self.process_incoming_message(packet)
@@ -122,6 +124,8 @@ class TCPClientProtocol(asyncio.Protocol):
                 xml = self.message_handler.exi_to_v2g_dc_msg(payload)
             elif message_type == 0x8002:
                 xml = self.message_handler.exi_to_v2g_common_msg(payload)
+            elif message_type == 0x8110:
+                xml = self.message_handler.exi_to_iam_msg(payload)
             else:
                 raise Exception("Unknown payload type")
             logger.debug("Message successfully decoded " + xml)
@@ -169,6 +173,9 @@ class TCPClientProtocol(asyncio.Protocol):
                 elif reaction.msg_type == "SupportedAppProtocol":
                     exi = self.message_handler.supported_app_to_exi(xml_string)
                     message = bytes(SupportedAppMessage() / EXIPayload(payloadContent=exi))
+                elif reaction.msg_type == "IAM":
+                    exi = self.message_handler.iam_msg_to_exi(xml_string)
+                    message = bytes(IAMMessage() / EXIPayload(payloadContent=exi))
                 else:
                     raise Exception("Unknown message type")
                 logger.debug("Encoded EXI message: " + hexdump.dump(exi, len(exi), ' '))

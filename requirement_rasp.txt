@@ -51,3 +51,4 @@ transitions==0.8.8
 urllib3==1.26.6
 wrapt==1.12.1
 xsdata==21.8
+ecdsa==1.16.0

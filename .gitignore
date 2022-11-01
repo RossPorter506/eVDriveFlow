@@ -10,3 +10,7 @@ pids
 *.csr
 
 *.key
+
+.vscode/
+
+OpenEXI/

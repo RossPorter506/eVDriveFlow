@@ -1,0 +1,40 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:iso:std:iso:15118:-20:IAMMessages" xmlns:v2gci_ct="urn:iso:std:iso:15118:-20:CommonTypes" targetNamespace="urn:iso:std:iso:15118:-20:IAMMessages" elementFormDefault="qualified" attributeFormDefault="qualified" version="15118:-20">
+	<xs:import namespace="urn:iso:std:iso:15118:-20:CommonTypes" schemaLocation="V2G_CI_CommonTypes.xsd"/>
+	
+	<xs:element name="AttestationReq" type="AttestationReqType"/>
+	<xs:complexType name="AttestationReqType">
+		<xs:complexContent>
+			<xs:extension base="v2gci_ct:V2GRequestType">
+				<xs:sequence>
+					<xs:element name="challenge_nonce" type="NonceType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="AttestationRes" type="AttestationResType"/>
+	<xs:complexType name="AttestationResType">
+		<xs:complexContent>
+			<xs:extension base="v2gci_ct:V2GResponseType">
+				<xs:sequence>
+					<xs:element name="evidence" type="EvidenceType"/>
+					<xs:element name="signature" type="SignatureType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="NonceType">
+		<xs:restriction base="xs:hexBinary">
+			<xs:length value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EvidenceType">
+		<xs:restriction base="xs:hexBinary">
+			<xs:length value="32"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SignatureType">
+		<xs:restriction base="xs:hexBinary">
+			<xs:length value="48"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

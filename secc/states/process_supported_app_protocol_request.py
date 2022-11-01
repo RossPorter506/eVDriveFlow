@@ -14,7 +14,7 @@
 
 
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
-from secc.states.evse_state import EVSEState
+from .evse_state import EVSEState
 from shared.xml_classes.app_protocol import SupportedAppProtocolReq, SupportedAppProtocolRes, ResponseCodeType
 
 

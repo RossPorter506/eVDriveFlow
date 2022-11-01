@@ -31,6 +31,7 @@ from shared.session import SessionParameters
 from dataclasses import dataclass
 from states.wait_for_supported_app_protocol_response import WaitForSupportedAppProtocolResponse
 from states.wait_for_authorization_setup_response import WaitForAuthorizationSetupResponse
+from states.wait_for_attestation_response import WaitForAttestationResponse
 
 
 class EVSession(CommunicationSession):
@@ -52,6 +53,7 @@ class EVSession(CommunicationSession):
         service_detail_state = WaitForServiceDetailResponse()
         service_selection_state = WaitForServiceSelectionResponse()
         charge_parameter_discovery_state = WaitForDcChargeParameterDiscoveryResponse()
+        iam_attest_state = WaitForAttestationResponse()
         schedule_exchange_state = WaitForScheduleExchangeResponse()
         cable_check_state = WaitForDcCableCheckResponse()
         pre_charge_state = WaitForDcPreChargeResponse()
@@ -61,7 +63,7 @@ class EVSession(CommunicationSession):
         session_stop_state = WaitForSessionStopResponse()
         states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, authorization_state,
                   service_discovery_state, service_detail_state, service_selection_state,
-                  charge_parameter_discovery_state, schedule_exchange_state, cable_check_state, pre_charge_state,
+                  charge_parameter_discovery_state, iam_attest_state, schedule_exchange_state, cable_check_state, pre_charge_state,
                   welding_detection_state, power_delivery_state, dc_charge_loop_state, session_stop_state]
         exitable_states = states[2:-3]
 
@@ -74,9 +76,11 @@ class EVSession(CommunicationSession):
                 ["next_state", authorization_state, service_discovery_state, None, 'stop_session'],
                 ["next_state", service_discovery_state, service_detail_state, None, 'stop_session'],
                 ["next_state", service_detail_state, service_detail_state, lambda: len(self.controller.data_model.vas_services_to_detail) > 0, 'stop_session'],
-                ["next_state", service_detail_state, service_selection_state, lambda: len(self.controller.data_model.vas_services_to_detail) == 0, 'stop_session'],
+                ["next_state", service_detail_state, service_selection_state, lambda: len(self.controller.data_model.vas_services_to_detail) <= 0, 'stop_session'],
                 ["next_state", service_selection_state, charge_parameter_discovery_state, None, 'stop_session'],
-                ["next_state", charge_parameter_discovery_state, schedule_exchange_state, None, 'stop_session'],
+                ["next_state", charge_parameter_discovery_state, schedule_exchange_state, lambda: not self.controller.data_model.using_IAM, 'stop_session'],
+                ["next_state", charge_parameter_discovery_state, iam_attest_state, lambda: self.controller.data_model.using_IAM, 'stop_session'],
+                ["next_state", iam_attest_state, schedule_exchange_state, None, 'stop_session'],
                 ["next_state", schedule_exchange_state, cable_check_state, None, 'stop_session'],
                 ["next_state", cable_check_state, pre_charge_state, None, 'stop_session'],
                 ["next_state", pre_charge_state, pre_charge_state, 'processing'],

@@ -13,8 +13,8 @@
 """
 
 from shared.session_handler import SessionHandler
-from secc.udp_server import get_udp_server
-from secc.tcp_server import get_tcp_server
+from udp_server import get_udp_server
+from tcp_server import get_tcp_server
 import netifaces
 from configparser import ConfigParser
 
