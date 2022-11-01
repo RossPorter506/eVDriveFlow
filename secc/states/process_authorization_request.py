@@ -12,7 +12,7 @@
 
 """
 
-from secc.states.evse_state import EVSEState
+from .evse_state import EVSEState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import AuthorizationRes, ResponseCodeType, ProcessingType, MessageHeaderType
 import time

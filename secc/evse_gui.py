@@ -17,10 +17,10 @@ from shared.gui import GUI
 from shared.custom_canvas import CustomCanvas
 from PyQt5 import QtCore, QtGui, QtWidgets
 from superqt import QLabeledSlider
-from secc.evse_dummy_controller import EVSEDummyController
+from evse_dummy_controller import EVSEDummyController
 from shared.utils import float_to_dc_rational, rational_to_float
 from shared.threading import Worker
-from secc.start_evse import start_evse
+from start_evse import start_evse
 
 
 class EVSEMainWindow(GUI):

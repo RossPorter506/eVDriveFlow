@@ -19,7 +19,7 @@ from typing import Optional
 
 import hexdump
 import transitions
-from secc.evse_session import EVSESession
+from evse_session import EVSESession
 from shared.log import logger
 from shared.global_values import SECC_CERTCHAIN, SECC_KEYFILE, PASSPHRASE, EVCC_CERTIFICATE_AUTHORITY, SECURITY_PROTOCOL
 from shared.message_handling import MessageHandler

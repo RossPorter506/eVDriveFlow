@@ -12,7 +12,7 @@
 
 """
 
-from secc.states.evse_state import DcEVSEState
+from .evse_state import DcEVSEState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.dc import DcChargeParameterDiscoveryRes, ResponseCodeType, MessageHeaderType
 import time

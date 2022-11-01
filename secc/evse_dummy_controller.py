@@ -14,7 +14,7 @@
 
 from typing import Optional, List
 from shared.utils import rational_to_float, float_to_dc_rational, negative_dc_rational
-from secc.evse_controller import IEVSEController, DcEVSEDataModel
+from evse_controller import IEVSEController, DcEVSEDataModel
 from shared.global_values import V2G_CI_MSG_DC_NAMESPACE, IAM_SERVICE_ID
 from shared.xml_classes.app_protocol import AppProtocolType
 from shared.xml_classes.common_messages import ServiceListType, ServiceType, AuthorizationType, \
