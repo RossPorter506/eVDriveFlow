@@ -16,13 +16,14 @@
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from .evse_state import EVSEState
 from shared.xml_classes.app_protocol import SupportedAppProtocolReq, SupportedAppProtocolRes, ResponseCodeType
-
+from tests.timer import handshake_timer
 
 class ProcessSupportedAppProtocolRequest(EVSEState):
     def __init__(self):
         super(ProcessSupportedAppProtocolRequest, self).__init__(name="ProcessSupportedAppProtocolReq")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
+        handshake_timer.start()
         match = False
         extra_data = {}
         response_code = ResponseCodeType.FAILED_NO_NEGOTIATION

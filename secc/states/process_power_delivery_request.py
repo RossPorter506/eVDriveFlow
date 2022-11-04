@@ -18,6 +18,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import PowerDeliveryRes, MessageHeaderType, ResponseCodeType, \
     ChargeProgressType, EvsestatusType, EvseNotificationType
 import time
+from tests.timer import handshake_timer
 
 
 class ProcessPowerDeliveryRequest(EVSEState):
@@ -38,4 +39,5 @@ class ProcessPowerDeliveryRequest(EVSEState):
             response.evsestatus = EvsestatusType(0, EvseNotificationType.TERMINATE)
             # See [V2G20-913]
             asyncio.create_task(self.controller.state_machine.stop_charge())
+        print("Total handshake time:", handshake_timer.stop())
         return reaction

@@ -20,6 +20,7 @@ import time
 
 from ecdsa import SigningKey
 from IAM.IAM import hash_secc_software
+from tests.timer import attestation_timer
 
 class ProcessAttestationRequest(EVSEState):
     def __init__(self):
@@ -28,10 +29,13 @@ class ProcessAttestationRequest(EVSEState):
             self.secc_secure_key = SigningKey.from_pem(secure_key_file.read()) # In practise this key should not be accessible outside the TPM.
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
+        
         extra_data = {}
         response = AttestationRes()
+        attestation_timer.start()
         response.evidence = hash_secc_software()
         response.signature = self.secc_secure_key.sign_deterministic(payload.challenge_nonce + response.evidence)
+        print("Attestation time:", attestation_timer.stop())
         response.response_code = ResponseCodeType.OK
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()
