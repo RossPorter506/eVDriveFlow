@@ -17,6 +17,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 import time, os
 
 from shared.xml_classes.common_messages import ScheduleExchangeReq
+from shared.xml_classes.common_messages import MessageHeaderType as MessageHeaderTypeForCommon
 from shared.xml_classes.iam import AttestationReq, MessageHeaderType
 
 IAM_NONCE_SIZE=8 # TODO: Figure out where to put this
@@ -38,13 +39,13 @@ class WaitForDcChargeParameterDiscoveryResponse(DcEVState):
             self.controller.data_model.challenge_nonce = os.urandom(8)
             request.challenge_nonce = self.controller.data_model.challenge_nonce
             reaction.msg_type = "IAM"
+            request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         else:
             request = ScheduleExchangeReq()
             request.maximum_supporting_points = 1024
             request.dynamic_sereq_control_mode = self.controller.data_model.get_dynamic_sereq_control_mode()
             reaction.msg_type = "Common"
-
-        request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
+            request.header = MessageHeaderTypeForCommon(self.session_parameters.session_id, int(time.time()))
         
         reaction.message = request
         reaction.extra_data = extra_data
