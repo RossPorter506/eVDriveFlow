@@ -15,7 +15,8 @@ def _hash_dir_recursive(dir: str) -> bytes:
         for file in sorted(files):
             hashes += _hash_file(os.path.join(path, file))
         for dir in sorted(dirs):
-            hashes += _hash_dir_recursive(os.path.join(path, dir))
+            if dir != "__pycache__":
+                hashes += _hash_dir_recursive(os.path.join(path, dir))
         break # dir case above does the subfolders for us
     return sha256(hashes).digest()
 
