@@ -31,7 +31,7 @@ class EVSessionHandler(SessionHandler):
 
     def get_config(self):
         config = ConfigParser()
-        config.read("ev_config.ini")
+        config.read("../ev_config.ini")
         return config
 
     def set_network_parameters(self):

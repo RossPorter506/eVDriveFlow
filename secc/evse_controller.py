@@ -88,7 +88,7 @@ class DcEVSEDataModel(EVSEDataModel):
 class IEVSEController(ControllerInterface):
     def get_config(self):
         config = ConfigParser()
-        config.read("evse_config.ini")
+        config.read("../evse_config.ini")
         return config
 
 

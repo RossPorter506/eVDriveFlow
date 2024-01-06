@@ -29,7 +29,7 @@ class EVSESessionHandler(SessionHandler):
 
     def get_config(self):
         config = ConfigParser()
-        config.read("evse_config.ini")
+        config.read("../evse_config.ini")
         return config
 
     def start_new_session(self, controller):
