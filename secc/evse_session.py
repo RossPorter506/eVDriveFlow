@@ -85,7 +85,7 @@ class EVSESession(CommunicationSession):
             ["next_message", service_selection_state, charge_parameter_discovery_state],
             ["next_message", charge_parameter_discovery_state, schedule_exchange_state, lambda: not self.controller.data_model.IAM_Module.enabled],
             ["next_message", charge_parameter_discovery_state, attestation_state, lambda: self.controller.data_model.IAM_Module.enabled],
-            ["next_message", attestation_state, cable_check_state],
+            ["next_message", attestation_state, schedule_exchange_state],
             ["next_message", schedule_exchange_state, cable_check_state],
             ["next_message", cable_check_state, pre_charge_state],
             ["next_message", pre_charge_state, power_delivery_state],

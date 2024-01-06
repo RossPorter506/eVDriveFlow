@@ -36,7 +36,7 @@ class WaitForDcChargeParameterDiscoveryResponse(DcEVState):
         reaction = SendMessage()
         if self.controller.data_model.using_IAM:
             request = AttestationReq()
-            self.controller.data_model.challenge_nonce = os.urandom(8)
+            self.controller.data_model.challenge_nonce = os.urandom(IAM_NONCE_SIZE)
             request.challenge_nonce = self.controller.data_model.challenge_nonce
             reaction.msg_type = "IAM"
             request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
