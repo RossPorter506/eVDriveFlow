@@ -3,6 +3,14 @@ import os
 
 # Placeholder code for performing software/firmware measurement 
 
+def hash_sign_secc_software(nonce: int) -> (bytes, bytes):
+    with open("../shared/certificates/IAM_keys/secc_private_attestation_key.pem", "r") as secure_key_file:
+        secc_secure_key = SigningKey.from_pem(secure_key_file.read())
+    
+    hsh = hash_secc_software()
+    
+    return (hsh, secc_secure_key.sign_deterministic(nonce + hsh))
+
 # Get hash of files in current working directory. Because of how the project is run, this is 
 # the location of the evse_gui.py file, which is ../secc and ../malicious_secc, respectively
 def hash_secc_software() -> bytes:

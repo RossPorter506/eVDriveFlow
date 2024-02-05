@@ -19,7 +19,7 @@ from shared.xml_classes.iam import AttestationRes, MessageHeaderType
 import time
 
 from ecdsa import SigningKey
-from IAM.IAM import hash_secc_software
+from IAM.IAM_TEE import hash_sign_secc_software
 from tests.timer import attestation_timer
 
 class ProcessAttestationRequest(EVSEState):
@@ -33,8 +33,7 @@ class ProcessAttestationRequest(EVSEState):
         extra_data = {}
         response = AttestationRes()
         attestation_timer.start()
-        response.evidence = hash_secc_software()
-        response.signature = self.secc_secure_key.sign_deterministic(payload.challenge_nonce + response.evidence)
+        (response.evidence, response.signature) = hash_sign_secc_software(payload.challenge_nonce.hex())
         print("Attestation time:", attestation_timer.stop())
         response.response_code = ResponseCodeType.OK
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
