@@ -34,7 +34,7 @@
 	</xs:simpleType>
 	<xs:simpleType name="SignatureType">
 		<xs:restriction base="xs:hexBinary">
-			<xs:length value="48"/>
+			<xs:length value="64"/>
 		</xs:restriction>
 	</xs:simpleType>
 </xs:schema>
