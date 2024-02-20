@@ -34,7 +34,9 @@ class ProcessAttestationRequest(EVSEState):
         response = AttestationRes()
         attestation_timer.start()
         (response.evidence, response.signature) = hash_sign_secc_software(payload.challenge_nonce.hex())
-        print("Attestation time:", attestation_timer.stop())
+        time = attestation_timer.stop()
+	with open("attestation.txt", 'a') as f:
+		f.write(times+'\n')
         response.response_code = ResponseCodeType.OK
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()
