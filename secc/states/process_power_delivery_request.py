@@ -39,7 +39,7 @@ class ProcessPowerDeliveryRequest(EVSEState):
             response.evsestatus = EvsestatusType(0, EvseNotificationType.TERMINATE)
             # See [V2G20-913]
             asyncio.create_task(self.controller.state_machine.stop_charge())
-        time = handshake_timer.stop()
-	with open("handshakes.txt", 'a') as f:
-		f.write(time+'\n')
+        htime = handshake_timer.stop()
+        with open("../handshakes.txt", 'a') as f:
+            f.write(str(htime)+'\n')
         return reaction
