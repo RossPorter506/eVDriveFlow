@@ -32,6 +32,8 @@ from dataclasses import dataclass
 from states.wait_for_supported_app_protocol_response import WaitForSupportedAppProtocolResponse
 from states.wait_for_authorization_setup_response import WaitForAuthorizationSetupResponse
 from states.wait_for_attestation_response import WaitForAttestationResponse
+from states.wait_for_capability_attestation_evcc_response import WaitForCapabilityAttestationEvccResponse # TODO
+from states.wait_for_capability_attestation_secc_response import WaitForCapabilityAttestationSeccResponse # TODO
 
 
 class EVSession(CommunicationSession):
@@ -54,6 +56,8 @@ class EVSession(CommunicationSession):
         service_selection_state = WaitForServiceSelectionResponse()
         charge_parameter_discovery_state = WaitForDcChargeParameterDiscoveryResponse()
         iam_attest_state = WaitForAttestationResponse()
+        tpm_secc_attest_state = WaitForCapabilityAttestationSeccResponse()
+        tpm_evcc_attest_state = WaitForCapabilityAttestationEvccResponse()
         schedule_exchange_state = WaitForScheduleExchangeResponse()
         cable_check_state = WaitForDcCableCheckResponse()
         pre_charge_state = WaitForDcPreChargeResponse()
@@ -61,7 +65,7 @@ class EVSession(CommunicationSession):
         welding_detection_state = WaitForDcWeldingDetectionResponse()
         dc_charge_loop_state = WaitForDcChargeLoopResponse()
         session_stop_state = WaitForSessionStopResponse()
-        states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, authorization_state,
+        states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, tpm_secc_attest_state, tpm_evcc_attest_stateauthorization_state,
                   service_discovery_state, service_detail_state, service_selection_state,
                   charge_parameter_discovery_state, iam_attest_state, schedule_exchange_state, cable_check_state, pre_charge_state,
                   welding_detection_state, power_delivery_state, dc_charge_loop_state, session_stop_state]
@@ -70,7 +74,10 @@ class EVSession(CommunicationSession):
         # Transitions are defined like this: trigger, src, dst, conditions, unless, before, after, prepare
         transitions = [
                 ["next_state", initial_state, supported_app_protocol_state],
-                ["next_state", supported_app_protocol_state, session_setup_state],
+                ["next_state", supported_app_protocol_state, session_setup_state, lambda: not self.controller.data_model.tpm_capability_challenge_accepted],
+                ["next_state", supported_app_protocol_state, tpm_secc_attest_state, lambda: self.controller.data_model.tpm_capability_challenge_accepted],
+                ["next_state", tpm_secc_attest_state, tpm_evcc_attest_state, None, 'stop_session'],
+                ["next_state", tpm_evcc_attest_state, session_setup_state, None, 'stop_session'],
                 ["next_state", session_setup_state, authorization_setup_state],
                 ["next_state", authorization_setup_state, authorization_state, None, 'stop_session'],
                 ["next_state", authorization_state, service_discovery_state, None, 'stop_session'],

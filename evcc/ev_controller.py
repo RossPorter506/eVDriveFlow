@@ -54,6 +54,12 @@ class EVDataModel:
     using_IAM: Optional[bool] = None # Whether the SECC supports IAM or not. None (i.e. 'Don't Know') until service discovery and service detail, then True or False respectively
     attestation_success: Optional[bool] = None # Whether the SECC successfully attested to us or not. None until attestation is performed, then True or False.
     provided_nonce: Optional[bytes] = None # 8-byte nonce provided to the SECC, used to compare with result later
+    
+    # TPM Capability Verification
+    tpm_capability_challenge_accepted: Optional[bool] = None # Whether the SECC signalled support for TPM challenges
+    secc_attestation_success: Optional[bool] = None # Whether the SECC successfully attested to us or not. None until attestation is performed, then True or False.
+    tpm_secc_nonce: Optional[bytes] = None # 8-byte nonce provided to the SECC, used to compare with result later
+    mandatory_if_mutually_supported_service_ids: Optional[ServiceIdlistType] = None
 
     # ServiceSelection
     selected_energy_transfer_service: Optional[SelectedServiceType] = None

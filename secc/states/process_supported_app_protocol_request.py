@@ -5,7 +5,7 @@
 
 .. Copyright 2022 EDF 
 
-.. moduleauthor:: Oscar RODRIGUEZ INFANTE, Tony ZHOU, Trang PHAM, Efflam OLLIVIER 
+.. moduleauthor:: Oscar RODRIGUEZ INFANTE, Tony ZHOU, Trang PHAM, Efflam OLLIVIER, Ross PORTER
 
 .. License:: This source code is licensed under the MIT License.
 
@@ -28,10 +28,21 @@ class ProcessSupportedAppProtocolRequest(EVSEState):
         extra_data = {}
         response_code = ResponseCodeType.FAILED_NO_NEGOTIATION
         response = SupportedAppProtocolRes()
+        self.controller.data_model.tpm_capability_challenge_accepted = False
+        
         if isinstance(payload, SupportedAppProtocolReq):
             # Sorting app protocols by priority
             payload.app_protocol.sort(key=self.get_priority)
+            
+            # If we see Modified 15118-20, set flag and continue normally for now
             for protocol in payload.app_protocol:
+                if protocol.protocol_namespace == V2G_CI_MSG_TPM_NAMESPACE:
+                    self.controller.data_model.tpm_capability_challenge_accepted = True
+                    break
+            
+            for protocol in payload.app_protocol:
+                if protocol.protocol_namespace == V2G_CI_MSG_TPM_NAMESPACE: # don't bother checking this version for now
+                    continue
                 for supported_protocol in self.get_supported_app_protocols():
                     if protocol.protocol_namespace == supported_protocol.protocol_namespace and \
                             protocol.version_number_major == supported_protocol.version_number_major:
@@ -43,6 +54,7 @@ class ProcessSupportedAppProtocolRequest(EVSEState):
                         response.schema_id = protocol.schema_id
                         # Saving schema id in session
                         extra_data['schema_id'] = protocol.schema_id
+                        self.controller.data_model.chosen_schema_id = protocol.schema_id
                         break
                 if match:
                     break

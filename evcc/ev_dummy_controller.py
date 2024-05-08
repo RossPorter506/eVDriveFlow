@@ -15,7 +15,7 @@
 from typing import Optional
 from evcc.ev_controller import IEVController, DcEVDataModel
 import numpy as np
-from shared.global_values import V2G_CI_MSG_DC_NAMESPACE, IAM_SERVICE_ID
+from shared.global_values import V2G_CI_MSG_DC_NAMESPACE, IAM_SERVICE_ID, TPM_SCHEMA_ID, V2G_CI_MSG_TPM_NAMESPACE
 from shared.xml_classes.app_protocol import AppProtocolType
 from shared.xml_classes.common_messages import ServiceIdlistType, AuthorizationType, DynamicSereqControlModeType
 from shared.xml_classes.dc import BptDcCpdreqEnergyTransferMode, RationalNumberType as DcRationalNumberType, \
@@ -106,11 +106,15 @@ class EVEmulator(DcEVDataModel):
     def __post_init__(self):
         self.supported_app_protocols = [AppProtocolType(protocol_namespace=V2G_CI_MSG_DC_NAMESPACE,
                                                         version_number_major=1, version_number_minor=0,
-                                                        schema_id=1, priority=1)]
+                                                        schema_id=1, priority=2),
+                                        AppProtocolType(protocol_namespace=V2G_CI_MSG_TPM_NAMESPACE,
+                                                        version_number_major=1, version_number_minor=0,
+                                                        schema_id=TPM_SCHEMA_ID, priority=1]
         self.evccid = "EDFVFR123456789ZZZZ8"  # EDF-V-FR123456789ZZZZ-8
         self.authorization_services = [AuthorizationType.EIM]
         self.supported_service_ids = ServiceIdlistType([2, 6])
         self.supported_vas_service_ids = ServiceIdlistType([IAM_SERVICE_ID,])
+        self.mandatory_if_mutually_supported_service_ids = ServiceIdlistType([IAM_SERVICE_ID,])
         self.present_soc = 0
         self.current_energy = 0
         self.evpresent_voltage = DcRationalNumberType(0, 0)

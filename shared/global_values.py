@@ -43,7 +43,7 @@ SDP_PAYLOAD_TYPES = {0x8001: "SAPPayloadID", 0x8002: "Part20MainstreamPayloadID"
                      0x8004: "Part20DCMainstreamPayloadID", 0x8005: "Part20ACDPMainstreamPayloadID",
                      0x8006: "Part20WPTMainstreamPayloadID", 0x8101: "ScheduleRenegotiationPayloadID",
                      0x8102: "MeteringConfirmationPayloadID", 0x8103: "ACDSystemStatusPayloadID",
-                     0x8104: "ParkingStatusPayloadID", 0x8110: "IAMPayloadID", 
+                     0x8104: "ParkingStatusPayloadID", 0x8110: "IAMPayloadID", 0x8111: "TPMPayloadID", 
                      0x9000: "SDPRequestPayloadID", 0x9001: "SDPResponsePayloadID",
                      0x9002: "SDPRequestWithPPDPayloadID", 0x9003: "SDPResponseWithPPDPayloadID"}  # [7.8.3-3152]
 V2G_CI_MSG_DC_NAMESPACE = "urn:iso:std:iso:15118:-20:DC"
@@ -77,3 +77,9 @@ DC_SECC_SEQUENCE_TIMEOUT = {"DcChargeLoopRes": 0.5}
 
 #
 IAM_SERVICE_ID = "46483"
+
+# TPM Capability Challenge
+
+V2G_CI_MSG_TPM_NAMESPACE = "urn:iso:std:iso:15118:-20:TPM"
+TPM_SCHEMA_ID = "2"
+CAPABILITY_NONCE_SIZE=8

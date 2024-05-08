@@ -5,7 +5,7 @@
 
 .. Copyright 2022 EDF 
 
-.. moduleauthor:: Oscar RODRIGUEZ INFANTE, Tony ZHOU, Trang PHAM, Efflam OLLIVIER 
+.. moduleauthor:: Ross PORTER
 
 .. License:: This source code is licensed under the MIT License.
 
