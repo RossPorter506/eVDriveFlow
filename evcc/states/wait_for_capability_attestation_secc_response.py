@@ -16,7 +16,8 @@ from evcc.states.ev_state import DcEVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 import time
 from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType
-from shared.xml_classes.tpm import SeccCapabilityChallengeReq, TpmMessageHeaderType
+from shared.xml_classes.tpm import SeccCapabilityChallengeReq
+from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
 from shared.log import logger
 
 from ecdsa import VerifyingKey, BadSignatureError

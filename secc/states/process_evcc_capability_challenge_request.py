@@ -23,7 +23,7 @@ import time
 from ecdsa import SigningKey
 from tests.timer import attestation_timer
 
-class ProcessSeccCapabilityChallengeRequest(EVSEState):
+class ProcessEvccCapabilityChallengeRequest(EVSEState):
     def __init__(self):
         super(ProcessSeccCapabilityChallengeRequest, self).__init__(name="ProcessSeccCapabilityChallengeReq")
 

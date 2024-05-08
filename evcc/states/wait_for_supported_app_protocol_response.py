@@ -17,8 +17,9 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from evcc.states.ev_state import EVState
 from shared.xml_classes.common_messages import SessionSetupReq, MessageHeaderType
 from shared.xml_classes.app_protocol import ResponseCodeType
-from shared.xml_classes.tpm import SeccCapabilityChallengeReq, TpmMessageHeaderType
-from shared.global_valules import CAPABILITY_NONCE_SIZE
+from shared.xml_classes.tpm import SeccCapabilityChallengeReq
+from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
+from shared.global_values import CAPABILITY_NONCE_SIZE
 import time
 
 

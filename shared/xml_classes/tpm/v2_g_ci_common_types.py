@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional
-from shared.xml_classes.iam.xmldsig_core_schema import (
+from shared.xml_classes.tpm.xmldsig_core_schema import (
     Signature,
     X509IssuerSerialType,
 )

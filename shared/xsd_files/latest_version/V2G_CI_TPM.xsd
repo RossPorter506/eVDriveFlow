@@ -1,0 +1,69 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:iso:std:iso:15118:-20:TPMMessages" xmlns:v2gci_ct="urn:iso:std:iso:15118:-20:CommonTypes" xmlns:v2gci_cm="urn:iso:std:iso:15118:-20:CommonMessages" targetNamespace="urn:iso:std:iso:15118:-20:TPMMessages" elementFormDefault="qualified" attributeFormDefault="qualified" version="15118:-20">
+	
+	<xs:import namespace="urn:iso:std:iso:15118:-20:CommonTypes" schemaLocation="V2G_CI_CommonTypes.xsd"/>
+	<xs:import namespace="urn:iso:std:iso:15118:-20:CommonMessages" schemaLocation="V2G_CI_CommonMessages.xsd"/>
+	
+	<xs:element name="SeccCapabilityChallengeReq" type="SeccCapabilityChallengeReqType"/>
+	<xs:complexType name="SeccCapabilityChallengeReqType">
+		<xs:complexContent>
+			<xs:extension base="v2gci_ct:V2GRequestType">
+				<xs:sequence>
+					<xs:element name="challenge_nonce" type="NonceType"/>
+					<xs:element name="supported_service_ids" type="v2gci_cm:ServiceIDListType"/>
+					<xs:element name="mandatory_if_mutally_supported_service_ids" type="v2gci_cm:ServiceIDListType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:element name="SeccCapabilityChallengeRes" type="SeccCapabilityChallengeResType"/>
+	<xs:complexType name="SeccCapabilityChallengeResType">
+		<xs:complexContent>
+			<xs:extension base="v2gci_ct:V2GRequestType">
+				<xs:sequence>
+					<xs:element name="challenge_nonce" type="NonceType"/>
+					<xs:element name="challenge_evidence" type="EvidenceType"/> <!-- TODO: Confirm Size/Type -->
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:element name="EvccCapabilityChallengeReq" type="EvccCapabilityChallengeReqType"/>
+	<xs:complexType name="EvccCapabilityChallengeReqType">
+		<xs:complexContent>
+			<xs:extension base="v2gci_ct:V2GRequestType">
+				<xs:sequence>
+					<xs:element name="challenge_evidence" type="EvidenceType"/> <!-- TODO: Confirm Size/Type -->
+					<xs:element name="challenge_signature" type="SignatureType"/> <!-- TODO: Confirm Size/Type -->
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:element name="EvccCapabilityChallengeRes" type="EvccCapabilityChallengeResType"/>
+	<xs:complexType name="EvccCapabilityChallengeResType">
+		<xs:complexContent>
+			<xs:extension base="v2gci_ct:V2GResponseType">
+				<xs:sequence>
+					<xs:element name="supported_app_protocol_chosen_schema_id" type="v2gci_cm:serviceIDType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:simpleType name="NonceType">
+		<xs:restriction base="xs:hexBinary">
+			<xs:length value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EvidenceType">
+		<xs:restriction base="xs:hexBinary">
+			<xs:length value="32"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SignatureType">
+		<xs:restriction base="xs:hexBinary">
+			<xs:length value="64"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

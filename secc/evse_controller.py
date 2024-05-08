@@ -55,7 +55,7 @@ class EVSEDataModel:
     evsestatus: Optional[EvsestatusType] = None
 
     IAM_Module = IAM()
-    chosen_schema_id: Optional[ServiceId] = None
+    chosen_schema_id: Optional[int] = None
 
     def attach(self, observer):
         self._observers.append(observer)
