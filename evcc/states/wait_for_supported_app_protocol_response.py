@@ -17,10 +17,11 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from evcc.states.ev_state import EVState
 from shared.xml_classes.common_messages import SessionSetupReq, MessageHeaderType
 from shared.xml_classes.app_protocol import ResponseCodeType
-from shared.xml_classes.tpm import SeccCapabilityChallengeReq
+from shared.xml_classes.tpm import SeccCapabilityChallengeReq, ServiceIdlistType
 from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
-from shared.global_values import CAPABILITY_NONCE_SIZE
-import time
+from shared.global_values import CAPABILITY_NONCE_SIZE, TPM_SCHEMA_ID
+
+import time, os
 
 
 class WaitForSupportedAppProtocolResponse(EVState):
@@ -40,22 +41,27 @@ class WaitForSupportedAppProtocolResponse(EVState):
                 if app_protocol.schema_id == payload.schema_id:
                     extra_data['chosen_app_protocol'] = app_protocol
             match = True
-        if match:
-            request.evccid = self.controller.data_model.evccid
         
         reaction = SendMessage()
         if payload.schema_id == TPM_SCHEMA_ID:
+            logger.info("TPM begins.")
             self.controller.data_model.tpm_capability_challenge_accepted = True
             request = SeccCapabilityChallengeReq()
-            request.challenge_nonce = CAPABILITY_NONCE_SIZE
-            request.supported_service_ids = self.controller.data_model.supported_service_ids
-            request.mandatory_if_mutally_supported_service_ids = self.controller.data_model.mandatory_if_mutually_supported_service_ids
+            
+            self.controller.data_model.secc_challenge_nonce = os.urandom(CAPABILITY_NONCE_SIZE)
+            request.challenge_nonce = self.controller.data_model.secc_challenge_nonce
+            
+            request.supported_service_ids = ServiceIdlistType([service for service in self.controller.data_model.supported_service_ids.service_id])
+            request.mandatory_if_mutally_supported_service_ids = ServiceIdlistType([service for service in self.controller.data_model.mandatory_if_mutually_supported_service_ids.service_id]) 
             reaction.msg_type = "TPM"
             request.header = TpmMessageHeaderType(session_id, int(time.time()))
         else:
+            logger.info("Normal begins.")
             request = SessionSetupReq()
             reaction.msg_type = "Common"
             request.header = MessageHeaderType(session_id, int(time.time()))
+            if match:
+                request.evccid = self.controller.data_model.evccid
         
         reaction.message = request
         reaction.extra_data = extra_data

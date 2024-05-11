@@ -116,6 +116,23 @@ class RationalNumberType:
     )
 
 
+@dataclass
+class ServiceIdlistType:
+    class Meta:
+        name = "ServiceIDListType"
+
+    service_id: List[int] = field(
+        default_factory=list,
+        metadata={
+            "name": "ServiceID",
+            "type": "Element",
+            "namespace": "urn:iso:std:iso:15118:-20:CommonTypes",
+            "min_occurs": 1,
+            "max_occurs": 16,
+        }
+    )
+
+
 class EvseNotificationType(Enum):
     PAUSE = "Pause"
     EXIT_STANDBY = "ExitStandby"

@@ -17,6 +17,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ResponseCodeType
 from shared.xml_classes.tpm import EvccCapabilityChallengeRes, MessageHeaderType
 from shared.global_values import CAPABILITY_NONCE_SIZE
+from shared.log import logger
 
 import time
 
@@ -25,17 +26,19 @@ from tests.timer import attestation_timer
 
 class ProcessEvccCapabilityChallengeRequest(EVSEState):
     def __init__(self):
-        super(ProcessSeccCapabilityChallengeRequest, self).__init__(name="ProcessSeccCapabilityChallengeReq")
+        super(ProcessEvccCapabilityChallengeRequest, self).__init__(name="ProcessEvccCapabilityChallengeReq")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         
         extra_data = {}
         response = EvccCapabilityChallengeRes()
         response.supported_app_protocol_chosen_schema_id = self.controller.data_model.chosen_schema_id
-        if self._verify_evcc_cert(payload.challenge_nonce):
+        if self._verify_evcc_signature(payload.challenge_signature, self.controller.data_model.evcc_challenge_nonce):
             response.response_code = ResponseCodeType.OK
+            logger.info("EVCC Verified")
         else:
             response.response_code = ResponseCodeType.FAILED
+            logger.warn("EVCC Not Verified")
         
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()
@@ -44,5 +47,6 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         reaction.msg_type = "TPM"
         return reaction
     
-    def _verify_evcc_cert(nonce: bytes):
+    def _verify_evcc_signature(self, signature, nonce):
+        logger.warn("Stubbed verifier used")
         return True #TODO

@@ -7,6 +7,7 @@ from shared.xml_classes.common_messages.v2_g_ci_common_types import (
     MeterInfoType,
     RationalNumberType,
     ReceiptType,
+    ServiceIdlistType,
     V2GrequestType,
     V2GresponseType,
     ProcessingType,
@@ -148,23 +149,6 @@ class SelectedServiceType:
             "type": "Element",
             "namespace": "urn:iso:std:iso:15118:-20:CommonMessages",
             "required": True,
-        }
-    )
-
-
-@dataclass
-class ServiceIdlistType:
-    class Meta:
-        name = "ServiceIDListType"
-
-    service_id: List[int] = field(
-        default_factory=list,
-        metadata={
-            "name": "ServiceID",
-            "type": "Element",
-            "namespace": "urn:iso:std:iso:15118:-20:CommonMessages",
-            "min_occurs": 1,
-            "max_occurs": 16,
         }
     )
 

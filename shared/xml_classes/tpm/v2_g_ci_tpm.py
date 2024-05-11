@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
-from shared.xml_classes.tpm.v2_g_ci_common_messages import ServiceIdlistType
 from shared.xml_classes.tpm.v2_g_ci_common_types import (
+    ServiceIdlistType,
     V2GrequestType,
     V2GresponseType,
 )
@@ -94,6 +94,16 @@ class SeccCapabilityChallengeResType(V2GrequestType):
             "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
             "required": True,
             "length": 32,
+            "format": "base16",
+        }
+    )
+    challenge_signature: Optional[bytes] = field(
+        default=None,
+        metadata={
+            "type": "Element",
+            "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
+            "required": True,
+            "length": 64,
             "format": "base16",
         }
     )

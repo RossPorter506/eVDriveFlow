@@ -23,7 +23,7 @@ from evse_session import EVSESession
 from shared.log import logger
 from shared.global_values import SECC_CERTCHAIN, SECC_KEYFILE, PASSPHRASE, EVCC_CERTIFICATE_AUTHORITY, SECURITY_PROTOCOL
 from shared.message_handling import MessageHandler
-from shared.messages import V2GTPMessage, EXIMessage, SupportedAppMessage, EXIDCMessage, IAMMessage
+from shared.messages import V2GTPMessage, EXIMessage, SupportedAppMessage, EXIDCMessage, IAMMessage, TPMMessage
 from shared.payloads import EXIPayload
 from shared.reaction_message import PauseSession, SendMessage, TerminateSession
 
@@ -59,6 +59,8 @@ class TCPServerProtocol(asyncio.Protocol):
             packet = EXIDCMessage(data)
         elif packet.get_payload_type() == 0x8110:
             packet = IAMMessage(data)
+        elif packet.get_payload_type() == 0x8111:
+            packet = TPMMessage(data)
         self.process_incoming_message(packet)
 
     def eof_received(self) -> Optional[bool]:
@@ -96,6 +98,9 @@ class TCPServerProtocol(asyncio.Protocol):
             elif message_type == 0x8110:
                 logger.info("Payload type: 0x8110")
                 xml = self.message_handler.exi_to_iam_msg(payload)
+            elif message_type == 0x8111:
+                logger.info("Payload type: 0x8111")
+                xml = self.message_handler.exi_to_tpm_msg(payload)
             else:
                 raise Exception("Unknown payload type")
             logger.debug("Message successfully decoded")
@@ -136,6 +141,8 @@ class TCPServerProtocol(asyncio.Protocol):
             exi = self.message_handler.v2g_common_msg_to_exi(xml)
         elif reaction.msg_type == "IAM":
             exi = self.message_handler.iam_msg_to_exi(xml)
+        elif reaction.msg_type == "TPM":
+            exi = self.message_handler.tpm_msg_to_exi(xml)
         else:
             raise Exception("Unknown message type")
         logger.debug("Encoded EXI message: " + hexdump.dump(exi, len(exi), ' '))
@@ -158,6 +165,8 @@ class TCPServerProtocol(asyncio.Protocol):
                 message = bytes(EXIMessage() / EXIPayload(payloadContent=exi))
             elif reaction.msg_type == "IAM":
                 message = bytes(IAMMessage() / EXIPayload(payloadContent=exi))
+            elif reaction.msg_type == "TPM":
+                message = bytes(TPMMessage() / EXIPayload(payloadContent=exi))
             else:
                 raise Exception("Unknown message type")
             self.transport.write(message)

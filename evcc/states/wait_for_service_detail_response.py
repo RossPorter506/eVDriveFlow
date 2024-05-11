@@ -14,10 +14,13 @@
 
 from evcc.states.ev_state import EVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
-from shared.xml_classes.common_messages import ServiceSelectionReq, ServiceDetailReq, MessageHeaderType, SelectedServiceType, SelectedServiceListType
-from shared.global_values import IAM_SERVICE_ID
+from shared.xml_classes.common_messages import ServiceSelectionReq, ServiceDetailReq, MessageHeaderType, SelectedServiceType, SelectedServiceListType, SessionStopReq, ChargingSessionType
+from shared.global_values import IAM_SERVICE_ID, TPM_SERVICE_ID
+from shared.log import logger
+
 import time
 
+from hashlib import sha256
 
 class WaitForServiceDetailResponse(EVState):
     def __init__(self):
@@ -32,6 +35,30 @@ class WaitForServiceDetailResponse(EVState):
             
             if str(service.service_id) == IAM_SERVICE_ID:
                 self.controller.data_model.using_IAM = True
+            if str(payload.service_id) == TPM_SERVICE_ID:
+                logger.debug("Received TPM Service Detail Request")
+                bytestring = bytearray()
+                for parameter_set in sorted(payload.service_parameter_list.parameter_set, key = lambda p: int(p.parameter_set_id)):
+                    for parameter in sorted(parameter_set.parameter, key = lambda p: int(p.name)):
+                        logger.debug("Parameter:", parameter.name, parameter.finite_string)
+                        bytestring += bytearray(parameter.finite_string.encode("UTF-8"))
+                calculated_hash = sha256(bytestring).hexdigest()
+                logger.debug("Calculated hash:", calculated_hash, type(calculated_hash))
+                logger.debug("Transmitted hash:", self.controller.data_model.secc_tpm_evidence, type(self.controller.data_model.secc_tpm_evidence))
+                if calculated_hash != self.controller.data_model.secc_tpm_evidence:
+                    logger.warn("Calculated hash does not match SECC's TPM-signed hash")
+                    self.controller.stop()
+                    request = SessionStopReq()
+                    request.charging_session = ChargingSessionType.TERMINATE
+                    # We probably shouldn't mention attestation at all.
+                    request.evtermination_code = "SECC capability attestation failure"
+                    request.evtermination_explanation = "Failure during SECC capability attestation"
+                    request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
+                    reaction = SendMessage()
+                    reaction.extra_data = {}
+                    reaction.message = request
+                    reaction.msg_type = "Common"
+                    return reaction
 
             # Create/append list of VASes to include in ServiceSelectionRequest
             if self.controller.data_model.selected_vaslist is None:

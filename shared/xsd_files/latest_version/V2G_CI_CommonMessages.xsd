@@ -85,7 +85,7 @@
 		<xs:complexContent>
 			<xs:extension base="v2gci_ct:V2GRequestType">
 				<xs:sequence>
-					<xs:element name="SupportedServiceIDs" type="ServiceIDListType" minOccurs="0"/>
+					<xs:element name="SupportedServiceIDs" type="v2gci_ct:ServiceIDListType" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -110,7 +110,7 @@
 		<xs:complexContent>
 			<xs:extension base="v2gci_ct:V2GRequestType">
 				<xs:sequence>
-					<xs:element name="ServiceID" type="serviceIDType"/>
+					<xs:element name="ServiceID" type="v2gci_ct:serviceIDType"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -120,7 +120,7 @@
 		<xs:complexContent>
 			<xs:extension base="v2gci_ct:V2GResponseType">
 				<xs:sequence>
-					<xs:element name="ServiceID" type="serviceIDType"/>
+					<xs:element name="ServiceID" type="v2gci_ct:serviceIDType"/>
 					<xs:element name="ServiceParameterList" type="ServiceParameterListType"/>
 				</xs:sequence>
 			</xs:extension>
@@ -373,17 +373,9 @@
 	<!--                                                        -->
 	<!-- Service Discovery / Service Detail / Service Selection -->
 	<!--                                                        -->
-	<xs:simpleType name="serviceIDType">
-		<xs:restriction base="xs:unsignedShort"/>
-	</xs:simpleType>
-	<xs:complexType name="ServiceIDListType">
-		<xs:sequence>
-			<xs:element name="ServiceID" type="serviceIDType" maxOccurs="16"/>
-		</xs:sequence>
-	</xs:complexType>
 	<xs:complexType name="ServiceType">
 		<xs:sequence>
-			<xs:element name="ServiceID" type="serviceIDType"/>
+			<xs:element name="ServiceID" type="v2gci_ct:serviceIDType"/>
 			<xs:element name="FreeService" type="xs:boolean"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -394,8 +386,8 @@
 	</xs:complexType>
 	<xs:complexType name="SelectedServiceType">
 		<xs:sequence>
-			<xs:element name="ServiceID" type="serviceIDType"/>
-			<xs:element name="ParameterSetID" type="serviceIDType"/>
+			<xs:element name="ServiceID" type="v2gci_ct:serviceIDType"/>
+			<xs:element name="ParameterSetID" type="v2gci_ct:serviceIDType"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="SelectedServiceListType">
@@ -416,7 +408,7 @@
 	</xs:complexType>
 	<xs:complexType name="ParameterSetType">
 		<xs:sequence>
-			<xs:element name="ParameterSetID" type="serviceIDType"/>
+			<xs:element name="ParameterSetID" type="v2gci_ct:serviceIDType"/>
 			<xs:element name="Parameter" type="ParameterType" maxOccurs="32"/>
 		</xs:sequence>
 	</xs:complexType>

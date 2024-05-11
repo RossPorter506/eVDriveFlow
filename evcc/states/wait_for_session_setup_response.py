@@ -29,9 +29,10 @@ class WaitForSessionSetupResponse(EVState):
         if payload.response_code == ResponseCodeType.OK_NEW_SESSION_ESTABLISHED:
             session_id = payload.header.session_id
             logger.info("Negotiated session id is: %s.", session_id)
+            extra_data["session_id"] = session_id
+            request.header = MessageHeaderType(session_id, int(time.time()))
             # TODO: handling reconnection to an older session
-        request.header = MessageHeaderType(session_id, int(time.time()))
-        extra_data["session_id"] = session_id
+        
         reaction = SendMessage()
         reaction.message = request
         reaction.extra_data = extra_data

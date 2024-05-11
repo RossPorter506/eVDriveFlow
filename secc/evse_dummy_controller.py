@@ -15,7 +15,7 @@
 from typing import Optional, List
 from shared.utils import rational_to_float, float_to_dc_rational, negative_dc_rational
 from evse_controller import IEVSEController, DcEVSEDataModel
-from shared.global_values import V2G_CI_MSG_DC_NAMESPACE, IAM_SERVICE_ID
+from shared.global_values import V2G_CI_MSG_DC_NAMESPACE, IAM_SERVICE_ID, TPM_SERVICE_ID, V2G_CI_MSG_TPM_NAMESPACE
 from shared.xml_classes.app_protocol import AppProtocolType
 from shared.xml_classes.common_messages import ServiceListType, ServiceType, AuthorizationType, \
     ServiceParameterListType, ParameterSetType, ParameterType, DynamicSeresControlModeType
@@ -24,6 +24,8 @@ from shared.xml_classes.dc import BptDcCpdresEnergyTransferMode, RationalNumberT
 from dataclasses import dataclass, field
 from shared.charge_controller_interface import ChargeControllerInterface
 from shared.physical_interface import PhysicalInterface
+from hashlib import sha256
+
 
 class EVSEDummyController(IEVSEController):
     """Class that implements the DcBptDynamic EVSE controller.
@@ -102,7 +104,7 @@ class EVSEEmulator(DcEVSEDataModel):
                                                         version_number_major=1, version_number_minor=0, priority=1)]
         self.authorization_services = [AuthorizationType.EIM]
         self.certificate_installation_service = False
-        self.energy_transfer_service_list = ServiceListType([ServiceType(6, False)])
+        self.energy_transfer_service_list = ServiceListType([ServiceType(6, False),ServiceType(60, False), ServiceType(600, False)])
         self.service_renegotiation_supported = False
         self.services = {"6": ServiceParameterListType([ParameterSetType(1,[
                                     ParameterType(name="Connector", int_value=2), 
@@ -118,8 +120,21 @@ class EVSEEmulator(DcEVSEDataModel):
                                     ParameterType(name="PreChargeRuntimeAttestationSupport", bool_value=False),
                                     ParameterType(name="IntraChargeRuntimeAttestationSupport", bool_value=False),
                                     ParameterType(name="IntraChargePushNotifyRuntimeAttestationSupport", bool_value=False),]
-                                )])}
-        self.vaslist = ServiceListType([ServiceType(IAM_SERVICE_ID, True)])
+                                )]),
+                         TPM_SERVICE_ID: ServiceParameterListType([ParameterSetType(1,[
+                                    ParameterType(name="ProtocolNamespace", finite_string=V2G_CI_MSG_TPM_NAMESPACE), 
+                                    ParameterType(name="VersionNumberMajor", int_value=1),
+                                    ParameterType(name="VersionNumberMinor", int_value=0),]
+                                )]),
+                         }
+        self.vaslist = ServiceListType([ServiceType(int(IAM_SERVICE_ID), True), ServiceType(int(TPM_SERVICE_ID), True)])
+        
+        # Calculate hashes over supported services and put results into a pseudo-service. These will be backed by a TPM-signed 
+        # cert exchanged during protocol negotiation. In a real implementation these would be calculated before boot, when the 
+        # TPM signing key can be used to generate a signature. In this PoC we simply calculate them here.
+        tpm_parameter_list_type = self._calc_service_hashes(self.services, self.energy_transfer_service_list, self.vaslist)
+        self.services[TPM_SERVICE_ID] = tpm_parameter_list_type
+        
         max_current = rational_to_float(self.evsemaximum_charge_power)
         max_current /= rational_to_float(self.evseminimum_voltage)
         self.evsemaximum_charge_current = self.evsemaximum_discharge_current = float_to_dc_rational(max_current)
@@ -130,6 +145,89 @@ class EVSEEmulator(DcEVSEDataModel):
         self.evsemaximum_discharge_power = self.evsemaximum_charge_power
         self.evseminimum_discharge_power = self.evseminimum_charge_power
 
+    def _calc_service_hashes(self, services, vaslist, energy_transfer_service_list) -> ServiceParameterListType:
+        parameters: List[ParameterType] = []
+        for ID,serviceContents in self.services.items():
+            ID = int(ID)
+            found = False
+            for lst in [self.energy_transfer_service_list.service, self.vaslist.service]:
+                for service in lst:
+                    if service.service_id == ID:
+                        found = True
+                        bytestring = self._serialise_service(self.services[str(service.service_id)], service.service_id, service.free_service)
+                        result = ParameterType(name=str(service.service_id), finite_string=sha256(bytestring).hexdigest())
+                        parameters.append(result)
+                        break
+                if found:
+                    break
+            if not found:
+                raise RuntimeError("Did not match service", ID, serviceContents)
+        
+        i = 1
+        if (len(parameters) / 32) > 32:
+            raise RuntimeError("More than 1024 services!")
+            # We could always use one of the parameters to link to another service if we truly need more than 1024, but I think this is plenty.
+        
+        parameters.sort(key=lambda s: int(s.name))
+        
+        bytestring = bytearray()
+        for parameter in parameters:
+            bytestring += bytearray(parameter.finite_string.encode("UTF-8"))
+        tpm_evidence_hash = sha256(bytestring).hexdigest()
+        #logger.debug("TPM Evidence hash:", tpm_evidence_hash)
+        self.secc_tpm_evidence = tpm_evidence_hash
+        
+        # Partition the parameters into parameter sets
+        parameter_sets: List[ParameterSetType] = []
+        while len(parameters) > 32:
+            p_set = ParameterSetType(i, parameters[0:31])
+            parameter_sets.append(p_set)
+            del parameters[0:31]
+            i += 1
+        if len(parameters) != 0:
+            p_set = ParameterSetType(i, parameters[:])
+            parameter_sets.append(p_set)
+        
+        return ServiceParameterListType(parameter_sets)
+
+    def _serialise_service(self, service_parameter_lists:ServiceParameterListType, service_id: int, is_free: bool) -> bytearray:
+        bytestring = bytearray(service_id)
+        bytestring.append(is_free)
+        for parameter_set in service_parameter_lists.parameter_set:
+            bytestring += self._serialise_parameter_set(parameter_set)
+        return bytestring
+    
+    def _serialise_parameter_set(self, parameter_set: ParameterSetType) -> bytearray:
+        bytestring = bytearray(parameter_set.parameter_set_id)
+        for parameter in sorted(parameter_set.parameter, key=lambda s: s.name):
+            bytestring += self._serialise_parameter(parameter)
+        return bytestring
+    
+    def _serialise_parameter(self, parameter: ParameterType) -> bytearray:
+        bytestring = bytearray(len(parameter.name))
+        bytestring += bytearray(parameter.name.encode("UTF-8"))
+        if parameter.bool_value is not None:
+            bytestring.append(0)
+            bytestring.append(parameter.bool_value)
+        elif parameter.byte_value is not None:
+            bytestring.append(1)
+            bytestring.append(parameter.byte_value)
+        elif parameter.short_value is not None:
+            bytestring.append(2)
+            bytestring.append(parameter.short_value)
+        elif parameter.int_value is not None:
+            bytestring.append(3)
+            bytestring.append(parameter.int_value)
+        elif parameter.rational_number is not None:
+            bytestring.append(4)
+            bytestring.append(parameter.rational_number.exponent)
+            bytestring.append(parameter.rational_number.value)
+        elif parameter.finite_string is not None:
+            bytestring.append(5)
+            bytestring.append(len(parameter.finite_string))
+            bytestring += bytearray(parameter.finite_string.encode("UTF-8"))
+        
+        return bytestring
 
     def get_dynamic_seres_control_mode(self):
         """Builds message containing DynamicSeresControlModeType.

@@ -318,4 +318,13 @@
 			<xs:element name="RootCertificateID" type="xmlsig:X509IssuerSerialType" maxOccurs="20"/>
 		</xs:sequence>
 	</xs:complexType>
+	
+	<xs:simpleType name="serviceIDType">
+		<xs:restriction base="xs:unsignedShort"/>
+	</xs:simpleType>
+	<xs:complexType name="ServiceIDListType">
+		<xs:sequence>
+			<xs:element name="ServiceID" type="serviceIDType" maxOccurs="16"/>
+		</xs:sequence>
+	</xs:complexType>
 </xs:schema>

@@ -14,10 +14,11 @@
 
 from evcc.states.ev_state import DcEVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
-import time
 from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType, SessionSetupReq
+from shared.xml_classes.tpm import ResponseCodeType
 from shared.log import logger
 
+import time
 from ecdsa import VerifyingKey, BadSignatureError
 
 class WaitForEvccCapabilityChallengeResponse(DcEVState):
@@ -26,11 +27,13 @@ class WaitForEvccCapabilityChallengeResponse(DcEVState):
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         reaction = SendMessage()
+        logger.debug(payload.response_code, type(payload.response_code), "vs", ResponseCodeType.OK, type(ResponseCodeType.OK))
         if payload.response_code == ResponseCodeType.OK:
             # SECC was happy with our evidence
             logger.info('EVCC Capability Attestation Successful. Continuing to Session Setup.')
             request = SessionSetupReq()
             session_id = "00000000".encode("ascii")
+            request.evccid = self.controller.data_model.evccid
             request.header = MessageHeaderType(session_id, int(time.time()))
 
         else: # attestation failed - EVCC possibly compromised

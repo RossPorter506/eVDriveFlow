@@ -17,6 +17,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from .evse_state import EVSEState
 from shared.xml_classes.app_protocol import SupportedAppProtocolReq, SupportedAppProtocolRes, ResponseCodeType
 from tests.timer import handshake_timer
+from shared.global_values import V2G_CI_MSG_TPM_NAMESPACE
 
 class ProcessSupportedAppProtocolRequest(EVSEState):
     def __init__(self):
@@ -37,6 +38,7 @@ class ProcessSupportedAppProtocolRequest(EVSEState):
             # If we see Modified 15118-20, set flag and continue normally for now
             for protocol in payload.app_protocol:
                 if protocol.protocol_namespace == V2G_CI_MSG_TPM_NAMESPACE:
+                    TPM_schema_id = protocol.schema_id
                     self.controller.data_model.tpm_capability_challenge_accepted = True
                     break
             
@@ -58,6 +60,11 @@ class ProcessSupportedAppProtocolRequest(EVSEState):
                         break
                 if match:
                     break
+        
+        # If we support TPM verification pick this schema, we will renegotiate the actual version after verification.
+        if self.controller.data_model.tpm_capability_challenge_accepted == True:
+            response.schema_id = TPM_schema_id
+        
         response.response_code = response_code
         reaction = SendMessage()
         reaction.message = response

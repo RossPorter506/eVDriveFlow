@@ -30,7 +30,7 @@ class AttestationResType(V2GresponseType):
             "type": "Element",
             "namespace": "urn:iso:std:iso:15118:-20:IAMMessages",
             "required": True,
-            "length": 40,
+            "length": 32,
             "format": "base16",
         }
     )
@@ -40,7 +40,7 @@ class AttestationResType(V2GresponseType):
             "type": "Element",
             "namespace": "urn:iso:std:iso:15118:-20:IAMMessages",
             "required": True,
-            "length": 48,
+            "length": 64,
             "format": "base16",
         }
     )

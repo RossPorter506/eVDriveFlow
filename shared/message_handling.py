@@ -238,6 +238,8 @@ class MessageHandler(metaclass=Singleton):
                 r.setGrammarCache(MessageHandler.dc_grammar_cache);
             elif type_msg == "IAM":
                 r.setGrammarCache(MessageHandler.iam_grammar_cache);
+            elif type_msg == "TPM":
+                r.setGrammarCache(MessageHandler.tpm_grammar_cache);
             else:
                 raise Exception("Unknown message type")
 

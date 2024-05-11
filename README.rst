@@ -95,6 +95,8 @@ To update the *XSD* files and the associated *XML* classes:
     xsdata shared/xsd_files/latest_version/V2G_CI_AppProtocol.xsd --package shared.xml_classes.app_protocol
     xsdata shared/xsd_files/latest_version/V2G_CI_CommonMessages.xsd --package shared.xml_classes.common_messages
     xsdata shared/xsd_files/latest_version/V2G_CI_DC.xsd --package shared.xml_classes.dc
+    xsdata shared/xsd_files/latest_version/V2G_CI_IAM.xsd --package shared.xml_classes.iam
+    xsdata shared/xsd_files/latest_version/V2G_CI_TPM.xsd --package shared.xml_classes.tpm
 
 
 
