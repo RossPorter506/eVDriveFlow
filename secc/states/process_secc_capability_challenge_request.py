@@ -34,7 +34,10 @@ class ProcessSeccCapabilityChallengeRequest(EVSEState):
         response.challenge_signature = self._get_tpm_signature(payload.challenge_nonce)
         response.challenge_evidence = self._get_tpm_evidence()
         
+        self.controller.data_model.evcc_supported_service_ids = payload.supported_service_ids
+        self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids = payload.mandatory_if_mutally_supported_service_ids
         self.controller.data_model.evcc_challenge_nonce = os.urandom(CAPABILITY_NONCE_SIZE)
+        
         response.challenge_nonce = self.controller.data_model.evcc_challenge_nonce
         
         #atime = attestation_timer.stop()

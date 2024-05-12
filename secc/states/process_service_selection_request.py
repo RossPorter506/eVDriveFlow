@@ -16,6 +16,7 @@ from .evse_state import EVSEState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ServiceSelectionRes, MessageHeaderType, ResponseCodeType
 from shared.global_values import IAM_SERVICE_ID
+from shared.log import logger
 import time
 
 
@@ -29,7 +30,30 @@ class ProcessServiceSelectionRequest(EVSEState):
                 # Deal with each VAS as necessary
                 if (str(service.service_id) == IAM_SERVICE_ID):
                     self.controller.data_model.IAM_Module.configure(service.parameter_set_id)
-
+        
+        # Use the EVCC's MiMS list to calculate mutually supported mandatory services
+        mutual_mandatory_service_ids = []
+        if (self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids is not None):
+            for service_id in self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids.service_id:
+                for service in self.controller.data_model.vaslist.service:
+                    if service_id == service.service_id:
+                        mutual_mandatory_service_ids.append(service_id)
+        
+        # Check all mutual mandatory services have been selected
+        for service_id in mutual_mandatory_service_ids:
+            if service_id not in payload.selected_vaslist.selected_service:
+                # Mutually supported mandatory service not selected
+                logger.warn("At least one mutually supported mandatory service was not enabled: " + str(service_id))
+                response = ServiceSelectionRes()
+                response.response_code = ResponseCodeType.FAILED
+                response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
+                reaction = SendMessage()
+                extra_data = {}
+                reaction.extra_data = extra_data
+                reaction.message = response
+                reaction.msg_type = "Common"
+                return reaction
+        
         extra_data = {}
         response = ServiceSelectionRes()
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
