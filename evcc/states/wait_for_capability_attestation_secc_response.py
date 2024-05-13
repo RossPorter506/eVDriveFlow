@@ -20,27 +20,28 @@ from shared.xml_classes.tpm import SeccCapabilityChallengeReq, EvccCapabilityCha
 from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
 from shared.log import logger
 
-import os
+import os, subprocess
 
 from hashlib import sha256
 from ecdsa import VerifyingKey, BadSignatureError
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 
 class WaitForSeccCapabilityChallengeResponse(DcEVState):
     def __init__(self):
         super(WaitForSeccCapabilityChallengeResponse, self).__init__(name="WaitForSeccCapabilityChallengeRes")
-        #with open("../shared/certificates/TPM_keys/secc_public_attestation_key.pem", "r") as pub_key_file:
-        #    self.secc_public_key = VerifyingKey.from_pem(pub_key_file.read())
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         reaction = SendMessage()
         if payload.challenge_evidence and payload.challenge_signature \
-        and self._verify(payload.challenge_evidence, payload.challenge_signature):
+        and self._verify(payload.challenge_signature, payload.challenge_evidence):
             # Hash matches sig. We don't know if hash is good until we can inspect the services during ServiceDetail. Continue for now.
             self.controller.data_model.secc_tpm_evidence = payload.challenge_evidence.hex()
             logger.info('SECC Capability Attestation Successful so far. Continuing to EVCC capability attestation.')
             request = EvccCapabilityChallengeReq()
+            
+            self._tpm_attest_contents(payload.challenge_nonce)
             request.challenge_evidence = self._get_tpm_evidence()
-            request.challenge_signature = self._get_tpm_signature(payload.challenge_nonce)
+            request.challenge_signature = self._get_tpm_signature()
             request.header = TpmMessageHeaderType(self.session_parameters.session_id, int(time.time()))
             reaction.msg_type = "TPM"
 
@@ -60,19 +61,36 @@ class WaitForSeccCapabilityChallengeResponse(DcEVState):
         reaction.extra_data = extra_data
         return reaction
 
-    def _verify(self, hsh: bytes, sig: bytes) -> bool:
-        logger.warn('Stubbed verifier used.')
-        return True
+    def _verify(self, sig: bytes, message: bytes, nonce: bytes) -> bool:
+        r = sig[0:32]
+        s = sig[32:64]
+        sig_der = encode_dss_signature(r, s)
         
-        #try:
-        #    return self.secc_public_key.verify(sig, self.controller.data_model.challenge_nonce + hsh)
-        #except BadSignatureError:
-        #    return False
+        open("sig_file", 'wb').write(sig_der)
+        open("message_file", 'wb').write(message)
+        
+        try:
+            subprocess.check_output(["tpm2_check_quote", \
+                "-u", "../TPM/secc/secc_sign_public_key.pem", \
+                "-g", "sha256", \
+                "-m", "message_file", \
+                "-s", "sig_file", \
+                "-q", nonce.hex()])
+        except CalledProcessError as e:
+            logger.warn("Signature verification failed:" + str(e))
+            return False
+        
+        return True
 
-    def _get_tpm_signature(self, nonce: bytes) -> bool:
-        logger.warn('Stubbed TPM signature used.')
-        return os.urandom(64)
+    def _tpm_attest_contents(self, nonce: bytes):
+        subprocess.run(["bash", "../TPM/evcc/runtime.sh", nonce.hex()])
+
+    def _get_tpm_signature(self) -> bool:
+        signature_der = open("../TPM/evcc/signature.der", 'rb').read()
+        
+        (r, s) = decode_dss_signature(signature_der)
+        signature_p1363 = r.to_bytes(32, byteorder='big') + s.to_bytes(32, byteorder='big')
+        return signature_p1363
 
     def _get_tpm_evidence(self) -> bool:
-        logger.warn('Stubbed TPM evidence used.')
-        return sha256(bytes(0)).hexdigest()
+        return open("../TPM/evcc/attestation.nv_cert_info", 'rb').read()

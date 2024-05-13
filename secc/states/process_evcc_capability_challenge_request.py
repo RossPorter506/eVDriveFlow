@@ -33,7 +33,7 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         extra_data = {}
         response = EvccCapabilityChallengeRes()
         response.supported_app_protocol_chosen_schema_id = self.controller.data_model.chosen_schema_id
-        if self._verify_evcc_signature(payload.challenge_signature, self.controller.data_model.evcc_challenge_nonce):
+        if self._verify_evcc_signature(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce):
             response.response_code = ResponseCodeType.OK
             logger.info("EVCC Verified")
         else:
@@ -47,6 +47,23 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         reaction.msg_type = "TPM"
         return reaction
     
-    def _verify_evcc_signature(self, signature, nonce):
-        logger.warn("Stubbed verifier used")
-        return True #TODO
+    def _verify_evcc_signature(self, sig: bytes, message: bytes, nonce: bytes):
+        r = sig[0:32]
+        s = sig[32:64]
+        sig_der = encode_dss_signature(r, s)
+        
+        open("sig_file", 'wb').write(sig_der)
+        open("message_file", 'wb').write(message)
+        
+        try:
+            subprocess.check_output(["tpm2_check_quote", \
+                "-u", "../TPM/evcc/evcc_sign_public_key.pem", \
+                "-g", "sha256", \
+                "-m", "message_file", \
+                "-s", "sig_file", \
+                "-q", nonce.hex()])
+        except CalledProcessError as e:
+            logger.warn("Signature verification failed:" + str(e))
+            return False
+        
+        return True

@@ -29,9 +29,9 @@ class ProcessSeccCapabilityChallengeRequest(EVSEState):
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         extra_data = {}
         response = SeccCapabilityChallengeRes()
-        #attestation_timer.start()
-        #(response.evidence, response.signature) = hash_sign_secc_software(payload.challenge_nonce.hex())
-        response.challenge_signature = self._get_tpm_signature(payload.challenge_nonce)
+        
+        self._tpm_attest_contents(payload.challenge_nonce)
+        response.challenge_signature = self._get_tpm_signature()
         response.challenge_evidence = self._get_tpm_evidence()
         
         self.controller.data_model.evcc_supported_service_ids = payload.supported_service_ids
@@ -50,11 +50,16 @@ class ProcessSeccCapabilityChallengeRequest(EVSEState):
         reaction.message = response
         reaction.msg_type = "TPM"
         return reaction
-    
-    def _get_tpm_signature(self, nonce: bytes):
-        logger.warn("Used stubbed TPM signature")
-        return os.urandom(64) # TODO
-    
-    def _get_tpm_evidence(self):
-        logger.warn("Used stubbed TPM evidence")
-        return self.controller.data_model.secc_tpm_evidence # TODO
+
+    def _tpm_attest_contents(self, nonce: bytes):
+        subprocess.run(["bash", "../TPM/secc/runtime.sh", nonce.hex()])
+
+    def _get_tpm_signature(self) -> bool:
+        signature_der = open("../TPM/secc/signature.der", 'rb').read()
+        
+        (r, s) = decode_dss_signature(signature_der)
+        signature_p1363 = r.to_bytes(32, byteorder='big') + s.to_bytes(32, byteorder='big')
+        return signature_p1363
+
+    def _get_tpm_evidence(self) -> bool:
+        return open("../TPM/evcc/attestation.nv_cert_info", 'rb').read()

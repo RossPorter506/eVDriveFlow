@@ -14,7 +14,7 @@ tpm2_evictcontrol -C p -c pprimary.ctx -o pprimary.handle
 tpm2_evictcontrol -C p -c oprimary.ctx -o oprimary.handle
 tpm2_evictcontrol -C p -c sign.ctx -o sign.handle
 
-tpm2_readpublic -c sign.handle -f pem -o secc_sign_public_key.pem
+tpm2_readpublic -c sign.handle -f pem -o evcc_sign_public_key.pem
 
 # Make NVRAM index to store signature
 tpm2_nvdefine -C p -s $NVRAM_INDEX_SIZE -a "ownerread|ppwrite|platformcreate|write_stclear|read_stclear" $NVRAM_INDEX

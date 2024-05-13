@@ -37,14 +37,17 @@ class WaitForServiceDetailResponse(EVState):
                 self.controller.data_model.using_IAM = True
             if str(payload.service_id) == TPM_SERVICE_ID:
                 logger.debug("Received TPM Service Detail Request")
+                # Combine the hashes of each service. Hash the result and check if it matches the TPM-signed hash.
                 bytestring = bytearray()
                 for parameter_set in sorted(payload.service_parameter_list.parameter_set, key = lambda p: int(p.parameter_set_id)):
                     for parameter in sorted(parameter_set.parameter, key = lambda p: int(p.name)):
-                        logger.debug("Parameter:", parameter.name, parameter.finite_string)
-                        bytestring += bytearray(parameter.finite_string.encode("UTF-8"))
+                        logger.debug("Parameter: " + str(parameter.name) + " " + str(parameter.finite_string))
+                        service_bytes = bytearray(int(parameter.name).to_bytes(2, "big") + \
+                                        bytearray(parameter.finite_string.encode("UTF-8"))
+                        bytestring += service_bytes
                 calculated_hash = sha256(bytestring).hexdigest()
-                logger.debug("Calculated hash:", calculated_hash, type(calculated_hash))
-                logger.debug("Transmitted hash:", self.controller.data_model.secc_tpm_evidence, type(self.controller.data_model.secc_tpm_evidence))
+                logger.debug("Calculated hash: " + str(calculated_hash) + str(type(calculated_hash)))
+                logger.debug("Transmitted hash: " +  str(self.controller.data_model.secc_tpm_evidence) + str(type(self.controller.data_model.secc_tpm_evidence)))
                 if calculated_hash != self.controller.data_model.secc_tpm_evidence:
                     logger.warn("Calculated hash does not match SECC's TPM-signed hash")
                     self.controller.stop()
