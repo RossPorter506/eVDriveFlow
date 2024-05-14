@@ -11,8 +11,8 @@ tpm2_create -C o -G ecc -a 'sign|fixedtpm|fixedparent|sensitivedataorigin|adminw
 
 # Make keys persistent
 tpm2_evictcontrol -C p -c pprimary.ctx -o pprimary.handle
-tpm2_evictcontrol -C p -c oprimary.ctx -o oprimary.handle
-tpm2_evictcontrol -C p -c sign.ctx -o sign.handle
+tpm2_evictcontrol -C o -c oprimary.ctx -o oprimary.handle
+tpm2_evictcontrol -C o -c sign.ctx -o sign.handle
 
 tpm2_readpublic -c sign.handle -f pem -o secc_sign_public_key.pem
 
