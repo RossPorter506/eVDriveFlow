@@ -17,7 +17,7 @@ class EvccCapabilityChallengeReqType(V2GrequestType):
             "type": "Element",
             "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
             "required": True,
-            "length": 32,
+            "max_length": 256,
             "format": "base16",
         }
     )
@@ -93,7 +93,7 @@ class SeccCapabilityChallengeResType(V2GrequestType):
             "type": "Element",
             "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
             "required": True,
-            "length": 32,
+            "max_length": 256,
             "format": "base16",
         }
     )

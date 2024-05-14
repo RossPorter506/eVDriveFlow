@@ -43,7 +43,7 @@ class WaitForServiceDetailResponse(EVState):
                     for parameter in sorted(parameter_set.parameter, key = lambda p: int(p.name)):
                         logger.debug("Parameter: " + str(parameter.name) + " " + str(parameter.finite_string))
                         service_bytes = bytearray(int(parameter.name).to_bytes(2, "big") + \
-                                        bytearray(parameter.finite_string.encode("UTF-8"))
+                                        bytearray(parameter.finite_string.encode("UTF-8")))
                         bytestring += service_bytes
                 calculated_hash = sha256(bytestring).hexdigest()
                 logger.debug("Calculated hash: " + str(calculated_hash) + str(type(calculated_hash)))

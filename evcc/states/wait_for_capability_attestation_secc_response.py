@@ -24,7 +24,7 @@ import os, subprocess
 
 from hashlib import sha256
 from ecdsa import VerifyingKey, BadSignatureError
-from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature, decode_dss_signature
 
 class WaitForSeccCapabilityChallengeResponse(DcEVState):
     def __init__(self):

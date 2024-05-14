@@ -58,7 +58,7 @@
 	</xs:simpleType>
 	<xs:simpleType name="EvidenceType">
 		<xs:restriction base="xs:hexBinary">
-			<xs:length value="32"/>
+			<xs:maxLength value="256"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="SignatureType">

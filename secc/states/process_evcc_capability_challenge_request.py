@@ -23,6 +23,7 @@ import time
 
 from ecdsa import SigningKey
 from tests.timer import attestation_timer
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 
 class ProcessEvccCapabilityChallengeRequest(EVSEState):
     def __init__(self):

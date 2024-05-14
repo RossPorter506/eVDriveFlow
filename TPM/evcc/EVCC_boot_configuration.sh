@@ -1,5 +1,5 @@
 #!/bin/bash
-source common.sh
+source $(dirname $0)"/common.sh"
 
 # Write capabilities to file. Realistically these could already be hashes.
 python <<HEREDOC

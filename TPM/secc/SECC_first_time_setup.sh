@@ -1,5 +1,5 @@
 #!/bin/bash
-source common.sh
+source $(dirname $0)"/common.sh"
 
 # Generate primary key
 tpm2_createprimary -C p -g sha256 -G ecc -c pprimary.ctx

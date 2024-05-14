@@ -20,7 +20,8 @@ from tests.timer import attestation_timer
 from shared.log import logger
 
 from hashlib import sha256
-import time, os
+import time, os, subprocess
+from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 
 class ProcessSeccCapabilityChallengeRequest(EVSEState):
     def __init__(self):
@@ -52,14 +53,14 @@ class ProcessSeccCapabilityChallengeRequest(EVSEState):
         return reaction
 
     def _tpm_attest_contents(self, nonce: bytes):
-        subprocess.run(["bash", "../TPM/secc/runtime.sh", nonce.hex()])
+        subprocess.run(["bash", "../TPM/secc/SECC_runtime.sh", nonce.hex()])
 
     def _get_tpm_signature(self) -> bool:
-        signature_der = open("../TPM/secc/signature.der", 'rb').read()
+        signature_der = open("../TPM/secc/ecc_signature.der", 'rb').read()
         
         (r, s) = decode_dss_signature(signature_der)
         signature_p1363 = r.to_bytes(32, byteorder='big') + s.to_bytes(32, byteorder='big')
         return signature_p1363
 
     def _get_tpm_evidence(self) -> bool:
-        return open("../TPM/evcc/attestation.nv_cert_info", 'rb').read()
+        return open("../TPM/secc/attestation.nv_cert_info", 'rb').read()

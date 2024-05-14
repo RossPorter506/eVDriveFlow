@@ -1,5 +1,5 @@
 #!/bin/bash
-source common.sh
+source $(dirname $0)"/common.sh"
 
 # Service ID, Hash.
 # As calculated in evse_dummy_controller._calc_service_hashes
@@ -9,13 +9,13 @@ source common.sh
 # Write capabilities to file.
 python <<HEREDOC
 services = bytearray(int(2).to_bytes(2, 'big'))
-services += bytearray.from_hex("456e76cf449c73d8dd0580c3e8dfd41208fca476a9fa34831dd9c2e35a72c855")
+services += bytearray.fromhex("456e76cf449c73d8dd0580c3e8dfd41208fca476a9fa34831dd9c2e35a72c855")
 
 services += bytearray(int(46483).to_bytes(2, 'big'))
-services += bytearray.from_hex("27841c9ffed7ba0a406e784ba48fcc87eb091e3c62cd7018f8bcb16db68bc031")
+services += bytearray.fromhex("27841c9ffed7ba0a406e784ba48fcc87eb091e3c62cd7018f8bcb16db68bc031")
 
 services += bytearray(int(46484).to_bytes(2, 'big'))
-services += bytearray.from_hex("b743ef01d97cf3bda9da8be44c14df2aa90de92e535f6f28e067b28aa25b47f2")
+services += bytearray.fromhex("b743ef01d97cf3bda9da8be44c14df2aa90de92e535f6f28e067b28aa25b47f2")
 
 open("secc_evidence.dat", 'wb').write(services)
 HEREDOC
