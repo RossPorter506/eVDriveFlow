@@ -8,7 +8,7 @@ source $(dirname $0)"/common.sh"
 # 46484, b743ef01d97cf3bda9da8be44c14df2aa90de92e535f6f28e067b28aa25b47f2
 # Write capabilities to file.
 python <<HEREDOC
-services = bytearray(int(2).to_bytes(2, 'big'))
+services = bytearray(int(6).to_bytes(2, 'big'))
 services += bytearray.fromhex("456e76cf449c73d8dd0580c3e8dfd41208fca476a9fa34831dd9c2e35a72c855")
 
 services += bytearray(int(46483).to_bytes(2, 'big'))

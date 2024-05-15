@@ -18,3 +18,4 @@ tpm2_readpublic -c sign.handle -f pem -o secc_sign_public_key.pem
 
 # Make NVRAM index to store signature
 tpm2_nvdefine -C p -s $NVRAM_INDEX_SIZE -a "ownerread|ppwrite|platformcreate|write_stclear|read_stclear" $NVRAM_INDEX
+#tpm2_nvundefine -C p $NVRAM_INDEX

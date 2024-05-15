@@ -18,8 +18,9 @@ from shared.xml_classes.common_messages import ResponseCodeType
 from shared.xml_classes.tpm import EvccCapabilityChallengeRes, MessageHeaderType
 from shared.global_values import CAPABILITY_NONCE_SIZE
 from shared.log import logger
+from shared.tpm import _parse_and_check_tpms_attest_cert
 
-import time
+import time, subprocess
 
 from ecdsa import SigningKey
 from tests.timer import attestation_timer
@@ -34,7 +35,9 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         extra_data = {}
         response = EvccCapabilityChallengeRes()
         response.supported_app_protocol_chosen_schema_id = self.controller.data_model.chosen_schema_id
-        if self._verify_evcc_signature(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce):
+        calculated_hash = self.calculate_evcc_hash_from_evidence()
+        if self._verify_evcc_signature(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce) \
+        and _parse_and_check_tpms_attest_cert(payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce, calculated_hash)
             response.response_code = ResponseCodeType.OK
             logger.info("EVCC Verified")
         else:
@@ -48,23 +51,45 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         reaction.msg_type = "TPM"
         return reaction
     
-    def _verify_evcc_signature(self, sig: bytes, message: bytes, nonce: bytes):
-        r = sig[0:32]
-        s = sig[32:64]
+    def _verify_evcc_signature(self, sig: bytes, message: bytes, nonce: bytes) -> bool:
+        r = int.from_bytes(sig[0:32], "big")
+        s = int.from_bytes(sig[32:64], "big")
+        print("@@@@", r,s)
         sig_der = encode_dss_signature(r, s)
         
         open("sig_file", 'wb').write(sig_der)
         open("message_file", 'wb').write(message)
         
         try:
-            subprocess.check_output(["tpm2_check_quote", \
+            subprocess.check_output(["tpm2_checkquote", \
                 "-u", "../TPM/evcc/evcc_sign_public_key.pem", \
                 "-g", "sha256", \
                 "-m", "message_file", \
                 "-s", "sig_file", \
                 "-q", nonce.hex()])
-        except CalledProcessError as e:
+        except subprocess.CalledProcessError as e:
             logger.warn("Signature verification failed:" + str(e))
             return False
         
         return True
+    
+    def calculate_evcc_hash_from_evidence(self) -> str:
+        self.controller.data_model.evcc_supported_service_ids.service_id.sort()
+        supported_services = bytearray()
+        for service_id in self.controller.data_model.evcc_supported_service_ids.service_id:
+            supported_services += service_id.to_bytes(2, "big")
+        
+        MiMS_services = bytearray()
+        self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids.service_id.sort()
+        for service_id in self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids.service_id:
+            MiMS_services += service_id.to_bytes(2, "big")
+        
+        supported_app_protocols = bytearray()
+        self.evcc_supported_app_protocols.app_protocol.sort(key = lambda a: a.protocol_namespace)
+        for protocol in self.evcc_supported_app_protocols.app_protocol:
+            supported_app_protocols += bytearray(protocol.protocol_namespace.encode("UTF-8"))
+            supported_app_protocols += protocol.version_number_major.to_bytes(4, "big")
+            supported_app_protocols += protocol.version_number_minor.to_bytes(4, "big")
+        
+        hsh = sha256(supported_services + MiMS_services + supported_app_protocols).hexdigest()
+        return hsh

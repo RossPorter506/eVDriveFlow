@@ -17,6 +17,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ServiceSelectionReq, ServiceDetailReq, MessageHeaderType, SelectedServiceType, SelectedServiceListType, SessionStopReq, ChargingSessionType
 from shared.global_values import IAM_SERVICE_ID, TPM_SERVICE_ID
 from shared.log import logger
+from shared.tpm import _parse_and_check_tpms_attest_cert
 
 import time
 
@@ -47,9 +48,11 @@ class WaitForServiceDetailResponse(EVState):
                         bytestring += service_bytes
                 calculated_hash = sha256(bytestring).hexdigest()
                 logger.debug("Calculated hash: " + str(calculated_hash) + str(type(calculated_hash)))
-                logger.debug("Transmitted hash: " +  str(self.controller.data_model.secc_tpm_evidence) + str(type(self.controller.data_model.secc_tpm_evidence)))
-                if calculated_hash != self.controller.data_model.secc_tpm_evidence:
-                    logger.warn("Calculated hash does not match SECC's TPM-signed hash")
+                evidence: bytes = self.controller.data_model.secc_tpm_evidence
+                logger.debug("Transmitted evidence: " +  str(evidence) + str(type(evidence)))
+                
+                if not _parse_and_check_tpms_attest_cert(evidence, calculated_hash):
+                    logger.warn("Error during parsing TPMS_ATTEST cert: Invalid or incorrect evidence")
                     self.controller.stop()
                     request = SessionStopReq()
                     request.charging_session = ChargingSessionType.TERMINATE

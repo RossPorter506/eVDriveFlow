@@ -33,7 +33,7 @@ class WaitForSeccCapabilityChallengeResponse(DcEVState):
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         reaction = SendMessage()
         if payload.challenge_evidence and payload.challenge_signature \
-        and self._verify(payload.challenge_signature, payload.challenge_evidence):
+        and self._verify(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.secc_challenge_nonce):
             # Hash matches sig. We don't know if hash is good until we can inspect the services during ServiceDetail. Continue for now.
             self.controller.data_model.secc_tpm_evidence = payload.challenge_evidence.hex()
             logger.info('SECC Capability Attestation Successful so far. Continuing to EVCC capability attestation.')
@@ -62,31 +62,31 @@ class WaitForSeccCapabilityChallengeResponse(DcEVState):
         return reaction
 
     def _verify(self, sig: bytes, message: bytes, nonce: bytes) -> bool:
-        r = sig[0:32]
-        s = sig[32:64]
-        sig_der = encode_dss_signature(r, s)
+        r = int.from_bytes(sig[0:32], "big")
+        s = int.from_bytes(sig[32:64], "big")
+        sig_der = encode_dss_signature(int(r), int(s))
         
         open("sig_file", 'wb').write(sig_der)
         open("message_file", 'wb').write(message)
         
         try:
-            subprocess.check_output(["tpm2_check_quote", \
+            subprocess.check_output(["tpm2_checkquote", \
                 "-u", "../TPM/secc/secc_sign_public_key.pem", \
                 "-g", "sha256", \
                 "-m", "message_file", \
                 "-s", "sig_file", \
                 "-q", nonce.hex()])
-        except CalledProcessError as e:
+        except subprocess.CalledProcessError as e:
             logger.warn("Signature verification failed:" + str(e))
             return False
         
         return True
 
     def _tpm_attest_contents(self, nonce: bytes):
-        subprocess.run(["bash", "../TPM/evcc/runtime.sh", nonce.hex()])
+        subprocess.run(["bash", "../TPM/evcc/EVCC_runtime.sh", nonce.hex()])
 
     def _get_tpm_signature(self) -> bool:
-        signature_der = open("../TPM/evcc/signature.der", 'rb').read()
+        signature_der = open("../TPM/evcc/ecc_signature.der", 'rb').read()
         
         (r, s) = decode_dss_signature(signature_der)
         signature_p1363 = r.to_bytes(32, byteorder='big') + s.to_bytes(32, byteorder='big')
