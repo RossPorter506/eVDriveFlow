@@ -35,7 +35,7 @@ class WaitForSeccCapabilityChallengeResponse(DcEVState):
         if payload.challenge_evidence and payload.challenge_signature \
         and self._verify(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.secc_challenge_nonce):
             # Hash matches sig. We don't know if hash is good until we can inspect the services during ServiceDetail. Continue for now.
-            self.controller.data_model.secc_tpm_evidence = payload.challenge_evidence.hex()
+            self.controller.data_model.secc_tpm_evidence = payload.challenge_evidence
             logger.info('SECC Capability Attestation Successful so far. Continuing to EVCC capability attestation.')
             request = EvccCapabilityChallengeReq()
             

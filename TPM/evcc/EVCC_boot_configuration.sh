@@ -1,5 +1,6 @@
 #!/bin/bash
-source $(dirname $0)"/common.sh"
+THISDIR=$(dirname $0)
+source ${THISDIR}"/common.sh"
 
 # Write capabilities to file. Realistically these could already be hashes.
 python <<HEREDOC
@@ -29,7 +30,7 @@ evidence = supported_services + MiMS_services + supported_app_protocols
 open("evcc_evidence.dat", 'wb').write(evidence)
 HEREDOC
 
-tpm2_hash -C p -g sha256 -o evcc_evidence_hash.sha256 evcc_evidence.dat
+tpm2_hash -C p -g sha256 -o ${THISDIR}/evcc_evidence_hash.sha256 ${THISDIR}/evcc_evidence.dat
 
-tpm2_nvwrite $NVRAM_INDEX -C p -i evcc_evidence_hash.sha256 # Write new value to index
+tpm2_nvwrite $NVRAM_INDEX -C p -i ${THISDIR}/evcc_evidence_hash.sha256 # Write new value to index
 tpm2_nvwritelock -C p $NVRAM_INDEX # write lock until next reboot. We would additionally lock out platform too, but do this just in case.

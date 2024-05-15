@@ -46,12 +46,13 @@ class WaitForServiceDetailResponse(EVState):
                         service_bytes = bytearray(int(parameter.name).to_bytes(2, "big") + \
                                         bytearray(parameter.finite_string.encode("UTF-8")))
                         bytestring += service_bytes
+                print(bytestring.hex())
                 calculated_hash = sha256(bytestring).hexdigest()
                 logger.debug("Calculated hash: " + str(calculated_hash) + str(type(calculated_hash)))
                 evidence: bytes = self.controller.data_model.secc_tpm_evidence
                 logger.debug("Transmitted evidence: " +  str(evidence) + str(type(evidence)))
                 
-                if not _parse_and_check_tpms_attest_cert(evidence, calculated_hash):
+                if not _parse_and_check_tpms_attest_cert(evidence, self.controller.data_model.secc_challenge_nonce, calculated_hash):
                     logger.warn("Error during parsing TPMS_ATTEST cert: Invalid or incorrect evidence")
                     self.controller.stop()
                     request = SessionStopReq()

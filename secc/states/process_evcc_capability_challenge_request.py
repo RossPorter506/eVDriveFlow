@@ -25,6 +25,7 @@ import time, subprocess
 from ecdsa import SigningKey
 from tests.timer import attestation_timer
 from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+from hashlib from sha256
 
 class ProcessEvccCapabilityChallengeRequest(EVSEState):
     def __init__(self):
@@ -37,7 +38,7 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         response.supported_app_protocol_chosen_schema_id = self.controller.data_model.chosen_schema_id
         calculated_hash = self.calculate_evcc_hash_from_evidence()
         if self._verify_evcc_signature(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce) \
-        and _parse_and_check_tpms_attest_cert(payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce, calculated_hash)
+        and _parse_and_check_tpms_attest_cert(payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce, calculated_hash):
             response.response_code = ResponseCodeType.OK
             logger.info("EVCC Verified")
         else:
@@ -77,19 +78,26 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         self.controller.data_model.evcc_supported_service_ids.service_id.sort()
         supported_services = bytearray()
         for service_id in self.controller.data_model.evcc_supported_service_ids.service_id:
+            print("ID:", service_id)
             supported_services += service_id.to_bytes(2, "big")
+        print(supported_services)
         
         MiMS_services = bytearray()
         self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids.service_id.sort()
         for service_id in self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids.service_id:
+            print("MID:", service_id)
             MiMS_services += service_id.to_bytes(2, "big")
+        print(MiMS_services)
         
         supported_app_protocols = bytearray()
-        self.evcc_supported_app_protocols.app_protocol.sort(key = lambda a: a.protocol_namespace)
-        for protocol in self.evcc_supported_app_protocols.app_protocol:
+        self.controller.data_model.evcc_supported_app_protocols.sort(key = lambda a: a.protocol_namespace)
+        for protocol in self.controller.data_model.evcc_supported_app_protocols:
+            print("APP:", protocol)
             supported_app_protocols += bytearray(protocol.protocol_namespace.encode("UTF-8"))
             supported_app_protocols += protocol.version_number_major.to_bytes(4, "big")
             supported_app_protocols += protocol.version_number_minor.to_bytes(4, "big")
+        print(supported_app_protocols)
         
         hsh = sha256(supported_services + MiMS_services + supported_app_protocols).hexdigest()
+        print(hsh)
         return hsh

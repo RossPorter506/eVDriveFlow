@@ -1,5 +1,5 @@
 # Given a TPMS_ATTEST evidence packet (generated from tpm2_NVCertify), check that the provided nonce matches the nonce in the evidence and that the hash in the evidence matches the hash provided
-def _parse_and_check_tpms_attest_cert(self, evidence:bytes, provided_nonce:bytes, calculated_hash:str) -> bool:
+def _parse_and_check_tpms_attest_cert(evidence:bytes, provided_nonce:bytes, calculated_hash:str) -> bool:
     magic_start = 0
     magic_size = 4
     magic: str = evidence[magic_start:magic_start+magic_size].hex()

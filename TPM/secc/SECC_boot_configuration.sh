@@ -1,5 +1,6 @@
 #!/bin/bash
-source $(dirname $0)"/common.sh"
+THISDIR=$(dirname $0)
+source ${THISDIR}"/common.sh"
 
 # Service ID, Hash.
 # As calculated in evse_dummy_controller._calc_service_hashes
@@ -17,10 +18,10 @@ services += bytearray.fromhex("27841c9ffed7ba0a406e784ba48fcc87eb091e3c62cd7018f
 services += bytearray(int(46484).to_bytes(2, 'big'))
 services += bytearray.fromhex("b743ef01d97cf3bda9da8be44c14df2aa90de92e535f6f28e067b28aa25b47f2")
 
-open("secc_evidence.dat", 'wb').write(services)
+open("${THISDIR}/secc_evidence.dat", 'wb').write(services)
 HEREDOC
 
-tpm2_hash -C p -g sha256 -o secc_evidence_hash.sha256 secc_evidence.dat
+tpm2_hash -C p -g sha256 -o ${THISDIR}/secc_evidence_hash.sha256 ${THISDIR}/secc_evidence.dat
 
-tpm2_nvwrite $NVRAM_INDEX -C p -i secc_evidence_hash.sha256 # Write new value to index
+tpm2_nvwrite $NVRAM_INDEX -C p -i ${THISDIR}/secc_evidence_hash.sha256 # Write new value to index
 tpm2_nvwritelock -C p $NVRAM_INDEX # write lock until next reboot. We would additionally lock out platform too, but do this just in case.

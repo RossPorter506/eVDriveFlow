@@ -34,7 +34,7 @@ class ProcessSupportedAppProtocolRequest(EVSEState):
         if isinstance(payload, SupportedAppProtocolReq):
             # Sorting app protocols by priority
             payload.app_protocol.sort(key=self.get_priority)
-            self.evcc_supported_app_protocols = payload.app_protocol # Store for calculation of EVCC TPM hash later
+            self.controller.data_model.evcc_supported_app_protocols = payload.app_protocol # Store for calculation of EVCC TPM hash later
             
             # If we see Modified 15118-20, set flag and continue normally for now
             for protocol in payload.app_protocol:

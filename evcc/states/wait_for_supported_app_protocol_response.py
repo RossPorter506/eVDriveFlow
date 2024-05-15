@@ -51,7 +51,10 @@ class WaitForSupportedAppProtocolResponse(EVState):
             self.controller.data_model.secc_challenge_nonce = os.urandom(CAPABILITY_NONCE_SIZE)
             request.challenge_nonce = self.controller.data_model.secc_challenge_nonce
             
-            request.supported_service_ids = ServiceIdlistType([service for service in self.controller.data_model.supported_service_ids.service_id])
+            services = [service for service in self.controller.data_model.supported_service_ids.service_id]
+            vases = [service for service in self.controller.data_model.supported_vas_service_ids.service_id]
+            request.supported_service_ids = ServiceIdlistType(services + vases)
+            
             request.mandatory_if_mutally_supported_service_ids = ServiceIdlistType([service for service in self.controller.data_model.mandatory_if_mutually_supported_service_ids.service_id]) 
             reaction.msg_type = "TPM"
             request.header = TpmMessageHeaderType(session_id, int(time.time()))
