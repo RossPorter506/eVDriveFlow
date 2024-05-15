@@ -25,7 +25,7 @@ import time, subprocess
 from ecdsa import SigningKey
 from tests.timer import attestation_timer
 from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
-from hashlib from sha256
+from hashlib import sha256
 
 class ProcessEvccCapabilityChallengeRequest(EVSEState):
     def __init__(self):

@@ -43,9 +43,8 @@ class WaitForServiceDetailResponse(EVState):
                 for parameter_set in sorted(payload.service_parameter_list.parameter_set, key = lambda p: int(p.parameter_set_id)):
                     for parameter in sorted(parameter_set.parameter, key = lambda p: int(p.name)):
                         logger.debug("Parameter: " + str(parameter.name) + " " + str(parameter.finite_string))
-                        service_bytes = bytearray(int(parameter.name).to_bytes(2, "big") + \
-                                        bytearray(parameter.finite_string.encode("UTF-8")))
-                        bytestring += service_bytes
+                        bytestring += bytearray(int(parameter.name).to_bytes(2, "big"))
+                        bytestring += bytearray.fromhex(parameter.finite_string)
                 print(bytestring.hex())
                 calculated_hash = sha256(bytestring).hexdigest()
                 logger.debug("Calculated hash: " + str(calculated_hash) + str(type(calculated_hash)))
@@ -69,9 +68,9 @@ class WaitForServiceDetailResponse(EVState):
 
             # Create/append list of VASes to include in ServiceSelectionRequest
             if self.controller.data_model.selected_vaslist is None:
-                self.controller.data_model.selected_vaslist = SelectedServiceListType(service)
+                self.controller.data_model.selected_vaslist = SelectedServiceListType([service])
             else:
-                self.controller.data_model.selected_vaslist.append(service)
+                self.controller.data_model.selected_vaslist.selected_service.append(service)
         else: # Not a VAS, energy transfer service
             # Insert logic about whether we want this mode. For now assume yes
             self.controller.data_model.selected_energy_transfer_service = payload.service_id

@@ -38,21 +38,26 @@ class ProcessServiceSelectionRequest(EVSEState):
                 for service in self.controller.data_model.vaslist.service:
                     if service_id == service.service_id:
                         mutual_mandatory_service_ids.append(service_id)
+        print(mutual_mandatory_service_ids)
+        print(payload.selected_vaslist.selected_service)
         
         # Check all mutual mandatory services have been selected
-        for service_id in mutual_mandatory_service_ids:
-            if service_id not in payload.selected_vaslist.selected_service:
-                # Mutually supported mandatory service not selected
-                logger.warn("At least one mutually supported mandatory service was not enabled: " + str(service_id))
-                response = ServiceSelectionRes()
-                response.response_code = ResponseCodeType.FAILED
-                response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
-                reaction = SendMessage()
-                extra_data = {}
-                reaction.extra_data = extra_data
-                reaction.message = response
-                reaction.msg_type = "Common"
-                return reaction
+        for service in payload.selected_vaslist.selected_service:
+            if service.service_id in mutual_mandatory_service_ids:
+                mutual_mandatory_service_ids.remove(service_id)
+        
+        if mutual_mandatory_service_ids:
+            # Mutually supported mandatory service not selected
+            logger.warn("At least one mutually supported mandatory service was not enabled: " + str(mutual_mandatory_service_ids))
+            response = ServiceSelectionRes()
+            response.response_code = ResponseCodeType.FAILED
+            response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
+            reaction = SendMessage()
+            extra_data = {}
+            reaction.extra_data = extra_data
+            reaction.message = response
+            reaction.msg_type = "Common"
+            return reaction
         
         extra_data = {}
         response = ServiceSelectionRes()

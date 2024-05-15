@@ -13,7 +13,7 @@ supported_services += int(46484).to_bytes(2, 'big')
 
 # Mandatory if Mutually Supported services
 # 46484
-MiMS_services = bytearray(int(46484).to_bytes(2, 'big'))
+MiMS_services = bytearray(int(46483).to_bytes(2, 'big'))
 
 # Supported App Protocols
 # "urn:iso:std:iso:15118:-20:DC", major=1, minor=0

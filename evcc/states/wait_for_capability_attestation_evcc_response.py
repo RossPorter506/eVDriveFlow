@@ -27,7 +27,6 @@ class WaitForEvccCapabilityChallengeResponse(DcEVState):
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         reaction = SendMessage()
-        logger.debug(payload.response_code, type(payload.response_code), "vs", ResponseCodeType.OK, type(ResponseCodeType.OK))
         if payload.response_code == ResponseCodeType.OK:
             # SECC was happy with our evidence
             logger.info('EVCC Capability Attestation Successful. Continuing to Session Setup.')
