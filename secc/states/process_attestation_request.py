@@ -25,8 +25,6 @@ from tests.timer import attestation_timer
 class ProcessAttestationRequest(EVSEState):
     def __init__(self):
         super(ProcessAttestationRequest, self).__init__(name="ProcessAttestationReq")
-        with open("../shared/certificates/IAM_keys/secc_private_attestation_key.pem", "r") as secure_key_file:
-            self.secc_secure_key = SigningKey.from_pem(secure_key_file.read()) # In practise this key should not be accessible outside the TPM.
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         

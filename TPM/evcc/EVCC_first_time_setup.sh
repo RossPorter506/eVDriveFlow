@@ -1,6 +1,6 @@
 #!/bin/bash
 THISDIR=$(dirname $0)
-source ${THISDIR}/"common.sh"
+source ${THISDIR}/common.sh
 
 # Generate primary key
 tpm2_createprimary -C p -g sha256 -G ecc -c ${THISDIR}/pprimary.ctx

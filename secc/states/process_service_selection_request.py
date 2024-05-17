@@ -31,6 +31,7 @@ class ProcessServiceSelectionRequest(EVSEState):
                 if (str(service.service_id) == IAM_SERVICE_ID):
                     self.controller.data_model.IAM_Module.configure(service.parameter_set_id)
         
+        validation_timer.resume()
         # Use the EVCC's MiMS list to calculate mutually supported mandatory services
         mutual_mandatory_service_ids = []
         if (self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids is not None):
@@ -38,8 +39,6 @@ class ProcessServiceSelectionRequest(EVSEState):
                 for service in self.controller.data_model.vaslist.service:
                     if service_id == service.service_id:
                         mutual_mandatory_service_ids.append(service_id)
-        print(mutual_mandatory_service_ids)
-        print(payload.selected_vaslist.selected_service)
         
         # Check all mutual mandatory services have been selected
         for service in payload.selected_vaslist.selected_service:
@@ -58,6 +57,10 @@ class ProcessServiceSelectionRequest(EVSEState):
             reaction.message = response
             reaction.msg_type = "Common"
             return reaction
+        
+        vtime = validation_timer.stop()
+        with open("secc_validation_time", 'a') as f:
+            f.write(vtime)
         
         extra_data = {}
         response = ServiceSelectionRes()

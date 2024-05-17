@@ -43,11 +43,11 @@ class CustomFormatter(logging.Formatter):
 
 # Create logger
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 # Create console handler with a higher log level
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG) # Change this setting for detailed log
+ch.setLevel(logging.WARNING) # Change this setting for detailed log
 ch.setFormatter(CustomFormatter())
 logger.addHandler(ch)
 

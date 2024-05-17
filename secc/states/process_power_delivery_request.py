@@ -26,6 +26,10 @@ class ProcessPowerDeliveryRequest(EVSEState):
         super(ProcessPowerDeliveryRequest, self).__init__(name="ProcessPowerDeliveryReq")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
+        ttime = total_negotiation_timer.stop()
+        with open("total_negotiation_time.txt", 'a') as f:
+            f.write(ttime)
+        
         extra_data = {}
         response = PowerDeliveryRes()
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))

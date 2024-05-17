@@ -19,6 +19,7 @@ from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType
 from shared.xml_classes.tpm import SeccCapabilityChallengeReq, EvccCapabilityChallengeReq
 from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
 from shared.log import logger
+from tests.timer import validation_timer
 
 import os, subprocess
 
@@ -32,6 +33,7 @@ class WaitForSeccCapabilityChallengeResponse(DcEVState):
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         reaction = SendMessage()
+        validation_timer.start()
         if payload.challenge_evidence and payload.challenge_signature \
         and self._verify(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.secc_challenge_nonce):
             # Hash matches sig. We don't know if hash is good until we can inspect the services during ServiceDetail. Continue for now.
@@ -42,6 +44,8 @@ class WaitForSeccCapabilityChallengeResponse(DcEVState):
             self._tpm_attest_contents(payload.challenge_nonce)
             request.challenge_evidence = self._get_tpm_evidence()
             request.challenge_signature = self._get_tpm_signature()
+            validation_timer.pause()
+            
             request.header = TpmMessageHeaderType(self.session_parameters.session_id, int(time.time()))
             reaction.msg_type = "TPM"
 

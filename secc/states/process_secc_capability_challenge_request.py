@@ -16,7 +16,7 @@ from .evse_state import EVSEState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.tpm import SeccCapabilityChallengeRes, MessageHeaderType, ResponseCodeType
 from shared.global_values import CAPABILITY_NONCE_SIZE
-from tests.timer import attestation_timer
+from tests.timer import validation_timer
 from shared.log import logger
 
 from hashlib import sha256
@@ -30,10 +30,11 @@ class ProcessSeccCapabilityChallengeRequest(EVSEState):
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         extra_data = {}
         response = SeccCapabilityChallengeRes()
-        
+        validation_timer.start()
         self._tpm_attest_contents(payload.challenge_nonce)
         response.challenge_signature = self._get_tpm_signature()
         response.challenge_evidence = self._get_tpm_evidence()
+        validation_timer.pause()
         
         self.controller.data_model.evcc_supported_service_ids = payload.supported_service_ids
         self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids = payload.mandatory_if_mutally_supported_service_ids
@@ -41,9 +42,6 @@ class ProcessSeccCapabilityChallengeRequest(EVSEState):
         
         response.challenge_nonce = self.controller.data_model.evcc_challenge_nonce
         
-        #atime = attestation_timer.stop()
-        #with open("../attestation.txt", 'a') as f:
-        #    f.write(str(atime)+'\n')
         response.response_code = ResponseCodeType.OK
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()

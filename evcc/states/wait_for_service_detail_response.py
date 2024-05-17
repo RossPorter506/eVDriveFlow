@@ -38,6 +38,7 @@ class WaitForServiceDetailResponse(EVState):
                 self.controller.data_model.using_IAM = True
             if str(payload.service_id) == TPM_SERVICE_ID:
                 logger.debug("Received TPM Service Detail Request")
+                validation_timer.resume()
                 # Combine the hashes of each service. Hash the result and check if it matches the TPM-signed hash.
                 bytestring = bytearray()
                 for parameter_set in sorted(payload.service_parameter_list.parameter_set, key = lambda p: int(p.parameter_set_id)):
@@ -51,7 +52,13 @@ class WaitForServiceDetailResponse(EVState):
                 evidence: bytes = self.controller.data_model.secc_tpm_evidence
                 logger.debug("Transmitted evidence: " +  str(evidence) + str(type(evidence)))
                 
-                if not _parse_and_check_tpms_attest_cert(evidence, self.controller.data_model.secc_challenge_nonce, calculated_hash):
+                evidence_ok = _parse_and_check_tpms_attest_cert(evidence, self.controller.data_model.secc_challenge_nonce, calculated_hash)
+                
+                vtime = validation_timer.stop()
+                with open("evcc_validation_time.txt", 'a') as f:
+                    f.write(vtime)
+                
+                if not evidence_ok:
                     logger.warn("Error during parsing TPMS_ATTEST cert: Invalid or incorrect evidence")
                     self.controller.stop()
                     request = SessionStopReq()

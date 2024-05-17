@@ -16,7 +16,7 @@
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from .evse_state import EVSEState
 from shared.xml_classes.app_protocol import SupportedAppProtocolReq, SupportedAppProtocolRes, ResponseCodeType
-from tests.timer import handshake_timer
+from tests.timer import total_negotiation_timer
 from shared.global_values import V2G_CI_MSG_TPM_NAMESPACE
 
 class ProcessSupportedAppProtocolRequest(EVSEState):
@@ -33,6 +33,7 @@ class ProcessSupportedAppProtocolRequest(EVSEState):
         
         if isinstance(payload, SupportedAppProtocolReq):
             # Sorting app protocols by priority
+            total_negotiation_timer.start()
             payload.app_protocol.sort(key=self.get_priority)
             self.controller.data_model.evcc_supported_app_protocols = payload.app_protocol # Store for calculation of EVCC TPM hash later
             
