@@ -113,8 +113,8 @@ class EVEmulator(DcEVDataModel):
         self.evccid = "EDFVFR123456789ZZZZ8"  # EDF-V-FR123456789ZZZZ-8
         self.authorization_services = [AuthorizationType.EIM]
         self.supported_service_ids = ServiceIdlistType([2, 6])
-        self.supported_vas_service_ids = ServiceIdlistType([TPM_SERVICE_ID])#ServiceIdlistType([IAM_SERVICE_ID, TPM_SERVICE_ID,])
-        self.mandatory_if_mutually_supported_service_ids = ServiceIdlistType([TPM_SERVICE_ID])#ServiceIdlistType([IAM_SERVICE_ID, TPM_SERVICE_ID])
+        self.supported_vas_service_ids = ServiceIdlistType([IAM_SERVICE_ID, TPM_SERVICE_ID,])
+        self.mandatory_if_mutually_supported_service_ids = ServiceIdlistType([TPM_SERVICE_ID])
         self.present_soc = 0
         self.current_energy = 0
         self.evpresent_voltage = DcRationalNumberType(0, 0)

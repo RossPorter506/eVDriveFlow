@@ -18,6 +18,7 @@ from shared.xml_classes.common_messages import ServiceSelectionReq, ServiceDetai
 from shared.global_values import IAM_SERVICE_ID, TPM_SERVICE_ID
 from shared.log import logger
 from shared.tpm import _parse_and_check_tpms_attest_cert
+from tests.timer import validation_timer
 
 import time
 
@@ -36,7 +37,7 @@ class WaitForServiceDetailResponse(EVState):
             
             if str(service.service_id) == IAM_SERVICE_ID:
                 self.controller.data_model.using_IAM = True
-            if str(payload.service_id) == TPM_SERVICE_ID:
+            if str(payload.service_id) == TPM_SERVICE_ID and self.controller.data_model.tpm_capability_challenge_accepted:
                 logger.debug("Received TPM Service Detail Request")
                 validation_timer.resume()
                 # Combine the hashes of each service. Hash the result and check if it matches the TPM-signed hash.

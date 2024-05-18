@@ -18,7 +18,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import PowerDeliveryRes, MessageHeaderType, ResponseCodeType, \
     ChargeProgressType, EvsestatusType, EvseNotificationType
 import time
-from tests.timer import handshake_timer
+from tests.timer import total_negotiation_timer
 
 
 class ProcessPowerDeliveryRequest(EVSEState):
