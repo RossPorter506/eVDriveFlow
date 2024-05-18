@@ -24,7 +24,6 @@ class ProcessSupportedAppProtocolRequest(EVSEState):
         super(ProcessSupportedAppProtocolRequest, self).__init__(name="ProcessSupportedAppProtocolReq")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
-        handshake_timer.start()
         match = False
         extra_data = {}
         response_code = ResponseCodeType.FAILED_NO_NEGOTIATION

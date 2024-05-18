@@ -56,7 +56,7 @@ class WaitForServiceDetailResponse(EVState):
                 
                 vtime = validation_timer.stop()
                 with open("evcc_validation_time.txt", 'a') as f:
-                    f.write(vtime)
+                    f.write(str(vtime) +'\n')
                 
                 if not evidence_ok:
                     logger.warn("Error during parsing TPMS_ATTEST cert: Invalid or incorrect evidence")

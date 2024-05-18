@@ -26,10 +26,6 @@ class ProcessPowerDeliveryRequest(EVSEState):
         super(ProcessPowerDeliveryRequest, self).__init__(name="ProcessPowerDeliveryReq")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
-        ttime = total_negotiation_timer.stop()
-        with open("total_negotiation_time.txt", 'a') as f:
-            f.write(ttime)
-        
         extra_data = {}
         response = PowerDeliveryRes()
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
@@ -43,7 +39,7 @@ class ProcessPowerDeliveryRequest(EVSEState):
             response.evsestatus = EvsestatusType(0, EvseNotificationType.TERMINATE)
             # See [V2G20-913]
             asyncio.create_task(self.controller.state_machine.stop_charge())
-        htime = handshake_timer.stop()
-        with open("../handshakes.txt", 'a') as f:
-            f.write(str(htime)+'\n')
+        ttime = total_negotiation_timer.stop()
+        with open("total_negotiation_time.txt", 'a') as f:
+            f.write(str(ttime) + '\n')
         return reaction
