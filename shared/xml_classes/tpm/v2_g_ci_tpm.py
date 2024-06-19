@@ -10,31 +10,31 @@ __NAMESPACE__ = "urn:iso:std:iso:15118:-20:TPMMessages"
 
 
 @dataclass
-class EvccCapabilityChallengeReqType(V2GrequestType):
-    challenge_evidence: Optional[bytes] = field(
+class CapabilityChallengeReqType(V2GrequestType):
+    challenge_nonce: Optional[bytes] = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
             "required": True,
-            "max_length": 256,
-            "format": "base16",
-        }
-    )
-    challenge_signature: Optional[bytes] = field(
-        default=None,
-        metadata={
-            "type": "Element",
-            "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
-            "required": True,
-            "length": 64,
+            "length": 8,
             "format": "base16",
         }
     )
 
 
 @dataclass
-class EvccCapabilityChallengeResType(V2GresponseType):
+class CapabilityChallengeResType(V2GresponseType):
+    challenge_nonce: Optional[bytes] = field(
+        default=None,
+        metadata={
+            "type": "Element",
+            "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
+            "required": True,
+            "length": 8,
+            "format": "base16",
+        }
+    )
     supported_app_protocol_chosen_schema_id: Optional[int] = field(
         default=None,
         metadata={
@@ -46,17 +46,7 @@ class EvccCapabilityChallengeResType(V2GresponseType):
 
 
 @dataclass
-class SeccCapabilityChallengeReqType(V2GrequestType):
-    challenge_nonce: Optional[bytes] = field(
-        default=None,
-        metadata={
-            "type": "Element",
-            "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
-            "required": True,
-            "length": 8,
-            "format": "base16",
-        }
-    )
+class CapabilityEvidenceReqType(V2GrequestType):
     supported_service_ids: Optional[ServiceIdlistType] = field(
         default=None,
         metadata={
@@ -73,20 +63,6 @@ class SeccCapabilityChallengeReqType(V2GrequestType):
             "required": True,
         }
     )
-
-
-@dataclass
-class SeccCapabilityChallengeResType(V2GrequestType):
-    challenge_nonce: Optional[bytes] = field(
-        default=None,
-        metadata={
-            "type": "Element",
-            "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
-            "required": True,
-            "length": 8,
-            "format": "base16",
-        }
-    )
     challenge_evidence: Optional[bytes] = field(
         default=None,
         metadata={
@@ -110,24 +86,48 @@ class SeccCapabilityChallengeResType(V2GrequestType):
 
 
 @dataclass
-class EvccCapabilityChallengeReq(EvccCapabilityChallengeReqType):
+class CapabilityEvidenceResType(V2GrequestType):
+    challenge_evidence: Optional[bytes] = field(
+        default=None,
+        metadata={
+            "type": "Element",
+            "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
+            "required": True,
+            "max_length": 256,
+            "format": "base16",
+        }
+    )
+    challenge_signature: Optional[bytes] = field(
+        default=None,
+        metadata={
+            "type": "Element",
+            "namespace": "urn:iso:std:iso:15118:-20:TPMMessages",
+            "required": True,
+            "length": 64,
+            "format": "base16",
+        }
+    )
+
+
+@dataclass
+class CapabilityChallengeReq(CapabilityChallengeReqType):
     class Meta:
         namespace = "urn:iso:std:iso:15118:-20:TPMMessages"
 
 
 @dataclass
-class EvccCapabilityChallengeRes(EvccCapabilityChallengeResType):
+class CapabilityChallengeRes(CapabilityChallengeResType):
     class Meta:
         namespace = "urn:iso:std:iso:15118:-20:TPMMessages"
 
 
 @dataclass
-class SeccCapabilityChallengeReq(SeccCapabilityChallengeReqType):
+class CapabilityEvidenceReq(CapabilityEvidenceReqType):
     class Meta:
         namespace = "urn:iso:std:iso:15118:-20:TPMMessages"
 
 
 @dataclass
-class SeccCapabilityChallengeRes(SeccCapabilityChallengeResType):
+class CapabilityEvidenceRes(CapabilityEvidenceResType):
     class Meta:
         namespace = "urn:iso:std:iso:15118:-20:TPMMessages"

@@ -1,5 +1,5 @@
 """
-.. module:: process_evcc_capability_challenge_request
+.. module:: process_capability_evidence_request
    :platform: Unix
    :synopsis: A module describing the EVCC Capability Challenge state.
 
@@ -15,7 +15,7 @@
 from .evse_state import EVSEState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ResponseCodeType
-from shared.xml_classes.tpm import EvccCapabilityChallengeRes, MessageHeaderType
+from shared.xml_classes.tpm import CapabilityEvidenceRes, MessageHeaderType
 from shared.global_values import CAPABILITY_NONCE_SIZE
 from shared.log import logger
 from shared.tpm import _parse_and_check_tpms_attest_cert
@@ -27,32 +27,40 @@ from ecdsa import SigningKey
 from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from hashlib import sha256
 
-class ProcessEvccCapabilityChallengeRequest(EVSEState):
+class ProcessCapabilityEvidenceRequest(EVSEState):
     def __init__(self):
-        super(ProcessEvccCapabilityChallengeRequest, self).__init__(name="ProcessEvccCapabilityChallengeReq")
+        super(ProcessCapabilityEvidenceRequest, self).__init__(name="ProcessCapabilityEvidenceReq")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         
         extra_data = {}
-        response = EvccCapabilityChallengeRes()
-        response.supported_app_protocol_chosen_schema_id = self.controller.data_model.chosen_schema_id
-        
-        validation_timer.resume()
-        calculated_hash = self.calculate_evcc_hash_from_evidence()
-        if self._verify_evcc_signature(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce) \
-        and _parse_and_check_tpms_attest_cert(payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce, calculated_hash):
-            response.response_code = ResponseCodeType.OK
-            logger.info("EVCC Verified")
-        else:
-            response.response_code = ResponseCodeType.FAILED
-            logger.warn("EVCC Not Verified")
-        validation_timer.pause()
-        
+        response = CapabilityEvidenceRes()
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()
         reaction.extra_data = extra_data
-        reaction.message = response
         reaction.msg_type = "TPM"
+        
+        self.controller.data_model.evcc_supported_service_ids = payload.supported_service_ids
+        self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids = payload.mandatory_if_mutally_supported_service_ids
+        #validation_timer.resume()
+        calculated_hash = self.calculate_evcc_hash_from_evidence()
+        structure_ok = _parse_and_check_tpms_attest_cert(payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce, calculated_hash)
+        if structure_ok:
+            self.controller.data_model.quote_process.wait()
+            value_ok = self._verify_evcc_signature(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce)
+            if value_ok:
+                response.response_code = ResponseCodeType.OK
+                logger.info("EVCC Verified")
+        if not (structure_ok and value_ok):
+            response.response_code = ResponseCodeType.FAILED
+            logger.warn("EVCC Not Verified")
+        #validation_timer.pause()
+        
+        self.controller.data_model.quote_process.wait()
+        response.challenge_signature = self._get_tpm_signature()
+        response.challenge_evidence = self._get_tpm_evidence()
+        
+        reaction.message = response
         return reaction
     
     def _verify_evcc_signature(self, sig: bytes, message: bytes, nonce: bytes) -> bool:
@@ -104,3 +112,13 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         hsh = sha256(supported_services + MiMS_services + supported_app_protocols).hexdigest()
         print(hsh)
         return hsh
+
+    def _get_tpm_signature(self) -> bool:
+        signature_der = open("../TPM/secc/ecc_signature.der", 'rb').read()
+        
+        (r, s) = decode_dss_signature(signature_der)
+        signature_p1363 = r.to_bytes(32, byteorder='big') + s.to_bytes(32, byteorder='big')
+        return signature_p1363
+
+    def _get_tpm_evidence(self) -> bool:
+        return open("../TPM/secc/attestation.nv_cert_info", 'rb').read()

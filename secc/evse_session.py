@@ -29,8 +29,8 @@ from secc.states.process_session_stop_request import ProcessSessionStopRequest
 from secc.states.process_supported_app_protocol_request import ProcessSupportedAppProtocolRequest
 from secc.states.process_dc_welding_detection_request import ProcessDcWeldingDetectionRequest
 from secc.states.process_attestation_request import ProcessAttestationRequest
-from secc.states.process_secc_capability_challenge_request import ProcessSeccCapabilityChallengeRequest
-from secc.states.process_evcc_capability_challenge_request import ProcessEvccCapabilityChallengeRequest
+from secc.states.process_capability_challenge_request import ProcessCapabilityChallengeRequest
+from secc.states.process_capability_evidence_request import ProcessCapabilityEvidenceRequest
 from shared.session import CommunicationSession
 import secrets
 from dataclasses import dataclass
@@ -56,8 +56,8 @@ class EVSESession(CommunicationSession):
         initial_state = "initial_state"
         supported_app_protocol_state = ProcessSupportedAppProtocolRequest()
         session_setup_state = ProcessSessionSetupRequest()
-        tpm_secc_attest_state = ProcessSeccCapabilityChallengeRequest()
-        tpm_evcc_attest_state = ProcessEvccCapabilityChallengeRequest()
+        tpm_capability_challenge_state = ProcessCapabilityChallengeRequest()
+        tpm_capability_evidence_state = ProcessCapabilityEvidenceRequest()
         authorization_setup_state = ProcessAuthorizationSetupRequest()
         authorization_state = ProcessAuthorizationRequest()
         service_discovery_state = ProcessServiceDiscoveryRequest()
@@ -72,7 +72,7 @@ class EVSESession(CommunicationSession):
         welding_detection_state = ProcessDcWeldingDetectionRequest()
         dc_charge_loop_state = ProcessDcChargeLoopRequest()
         session_stop_state = ProcessSessionStopRequest()
-        states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, tpm_secc_attest_state, tpm_evcc_attest_state, authorization_state,
+        states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, tpm_capability_challenge_state, tpm_evcc_attest_state, authorization_state,
                   service_discovery_state, service_detail_state, service_selection_state,
                   charge_parameter_discovery_state, attestation_state, schedule_exchange_state, cable_check_state, pre_charge_state,
                   welding_detection_state, power_delivery_state, dc_charge_loop_state, session_stop_state]
@@ -80,18 +80,19 @@ class EVSESession(CommunicationSession):
         # Transitions are defined like this: trigger, src, dst, conditions, unless, before, after, prepare
         transitions = [
             ["next_message", initial_state, supported_app_protocol_state],
-            ["next_message", supported_app_protocol_state, session_setup_state, lambda: not self.controller.data_model.tpm_capability_challenge_accepted],
-            ["next_message", supported_app_protocol_state, tpm_secc_attest_state, lambda: self.controller.data_model.tpm_capability_challenge_accepted],
-            ["next_message", tpm_secc_attest_state, tpm_evcc_attest_state],
-            ["next_message", tpm_evcc_attest_state, session_setup_state],
+            ["next_message", supported_app_protocol_state, session_setup_state,            lambda: not self.controller.data_model.tpm_capability_challenge_accepted],
+            ["next_message", supported_app_protocol_state, tpm_capability_challenge_state, lambda:     self.controller.data_model.tpm_capability_challenge_accepted],
+            ["next_message", tpm_capability_challenge_state, session_setup_state],
             ["next_message", session_setup_state, authorization_setup_state],
             ["next_message", authorization_setup_state, authorization_state],
             ["next_message", authorization_state, service_discovery_state],
             ["next_message", service_discovery_state, service_detail_state],
-            ["next_message", service_detail_state, service_selection_state],
+            ["next_message", service_detail_state, service_selection_state,       lambda: not self.controller.data_model.tpm_capability_challenge_accepted],
+            ["next_message", service_detail_state, tpm_capability_evidence_state, lambda:     self.controller.data_model.tpm_capability_challenge_accepted],
+            ["next_message", tpm_capability_evidence_state, service_selection_state]
             ["next_message", service_selection_state, charge_parameter_discovery_state],
             ["next_message", charge_parameter_discovery_state, schedule_exchange_state, lambda: not self.controller.data_model.IAM_Module.enabled],
-            ["next_message", charge_parameter_discovery_state, attestation_state, lambda: self.controller.data_model.IAM_Module.enabled],
+            ["next_message", charge_parameter_discovery_state, attestation_state,       lambda:     self.controller.data_model.IAM_Module.enabled],
             ["next_message", attestation_state, schedule_exchange_state],
             ["next_message", schedule_exchange_state, cable_check_state],
             ["next_message", cable_check_state, pre_charge_state],

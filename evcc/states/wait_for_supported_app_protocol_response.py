@@ -17,7 +17,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from evcc.states.ev_state import EVState
 from shared.xml_classes.common_messages import SessionSetupReq, MessageHeaderType
 from shared.xml_classes.app_protocol import ResponseCodeType
-from shared.xml_classes.tpm import SeccCapabilityChallengeReq, ServiceIdlistType
+from shared.xml_classes.tpm import CapabilityChallengeReq, ServiceIdlistType
 from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
 from shared.global_values import CAPABILITY_NONCE_SIZE, TPM_SCHEMA_ID
 
@@ -46,16 +46,11 @@ class WaitForSupportedAppProtocolResponse(EVState):
         if payload.schema_id == TPM_SCHEMA_ID:
             logger.info("TPM begins.")
             self.controller.data_model.tpm_capability_challenge_accepted = True
-            request = SeccCapabilityChallengeReq()
+            request = CapabilityChallengeReq()
             
             self.controller.data_model.secc_challenge_nonce = os.urandom(CAPABILITY_NONCE_SIZE)
             request.challenge_nonce = self.controller.data_model.secc_challenge_nonce
             
-            services = [service for service in self.controller.data_model.supported_service_ids.service_id]
-            vases = [service for service in self.controller.data_model.supported_vas_service_ids.service_id]
-            request.supported_service_ids = ServiceIdlistType(services + vases)
-            
-            request.mandatory_if_mutally_supported_service_ids = ServiceIdlistType([service for service in self.controller.data_model.mandatory_if_mutually_supported_service_ids.service_id]) 
             reaction.msg_type = "TPM"
             request.header = TpmMessageHeaderType(session_id, int(time.time()))
         else:

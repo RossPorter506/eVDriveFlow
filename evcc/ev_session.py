@@ -32,8 +32,8 @@ from dataclasses import dataclass
 from states.wait_for_supported_app_protocol_response import WaitForSupportedAppProtocolResponse
 from states.wait_for_authorization_setup_response import WaitForAuthorizationSetupResponse
 from states.wait_for_attestation_response import WaitForAttestationResponse
-from states.wait_for_capability_attestation_secc_response import WaitForSeccCapabilityChallengeResponse
-from states.wait_for_capability_attestation_evcc_response import WaitForEvccCapabilityChallengeResponse
+from states.wait_for_capability_challenge_response import WaitForCapabilityChallengeResponse
+from states.wait_for_capability_evidence_response import WaitForCapabilityEvidenceResponse
 
 
 
@@ -57,8 +57,8 @@ class EVSession(CommunicationSession):
         service_selection_state = WaitForServiceSelectionResponse()
         charge_parameter_discovery_state = WaitForDcChargeParameterDiscoveryResponse()
         iam_attest_state = WaitForAttestationResponse()
-        tpm_secc_attest_state = WaitForSeccCapabilityChallengeResponse()
-        tpm_evcc_attest_state = WaitForEvccCapabilityChallengeResponse()
+        tpm_challenge_state = WaitForCapabilityChallengeResponse()
+        tpm_evidence_state = WaitForCapabilityEvidenceResponse()
         schedule_exchange_state = WaitForScheduleExchangeResponse()
         cable_check_state = WaitForDcCableCheckResponse()
         pre_charge_state = WaitForDcPreChargeResponse()
@@ -76,18 +76,19 @@ class EVSession(CommunicationSession):
         transitions = [
                 ["next_state", initial_state, supported_app_protocol_state],
                 ["next_state", supported_app_protocol_state, session_setup_state, lambda: not self.controller.data_model.tpm_capability_challenge_accepted],
-                ["next_state", supported_app_protocol_state, tpm_secc_attest_state, lambda: self.controller.data_model.tpm_capability_challenge_accepted],
-                ["next_state", tpm_secc_attest_state, tpm_evcc_attest_state, None, 'stop_session'],
-                ["next_state", tpm_evcc_attest_state, session_setup_state, None, 'stop_session'],
+                ["next_state", supported_app_protocol_state, tpm_challenge_state, lambda:     self.controller.data_model.tpm_capability_challenge_accepted],
+                ["next_state", tpm_challenge_state, session_setup_state, None, 'stop_session'],
                 ["next_state", session_setup_state, authorization_setup_state],
                 ["next_state", authorization_setup_state, authorization_state, None, 'stop_session'],
                 ["next_state", authorization_state, service_discovery_state, None, 'stop_session'],
                 ["next_state", service_discovery_state, service_detail_state, None, 'stop_session'],
-                ["next_state", service_detail_state, service_detail_state, lambda: len(self.controller.data_model.vas_services_to_detail) > 0, 'stop_session'],
-                ["next_state", service_detail_state, service_selection_state, lambda: len(self.controller.data_model.vas_services_to_detail) <= 0, 'stop_session'],
+                ["next_state", service_detail_state, service_detail_state,    lambda: len(self.controller.data_model.vas_services_to_detail) >  0, 'stop_session'],
+                ["next_state", service_detail_state, service_selection_state, lambda: len(self.controller.data_model.vas_services_to_detail) <= 0 and not self.controller.data_model.tpm_capability_challenge_accepted, 'stop_session'],
+                ["next_state", service_detail_state, tpm_evidence_state,      lambda: len(self.controller.data_model.vas_services_to_detail) <= 0 and self.controller.data_model.tpm_capability_challenge_accepted, 'stop_session'],
+                ["next_state", tpm_evidence_state, service_selection_state, None, 'stop_session'],
                 ["next_state", service_selection_state, charge_parameter_discovery_state, None, 'stop_session'],
                 ["next_state", charge_parameter_discovery_state, schedule_exchange_state, lambda: not self.controller.data_model.using_IAM, 'stop_session'],
-                ["next_state", charge_parameter_discovery_state, iam_attest_state, lambda: self.controller.data_model.using_IAM, 'stop_session'],
+                ["next_state", charge_parameter_discovery_state, iam_attest_state,        lambda:     self.controller.data_model.using_IAM, 'stop_session'],
                 ["next_state", iam_attest_state, schedule_exchange_state, None, 'stop_session'],
                 ["next_state", schedule_exchange_state, cable_check_state, None, 'stop_session'],
                 ["next_state", cable_check_state, pre_charge_state, None, 'stop_session'],
