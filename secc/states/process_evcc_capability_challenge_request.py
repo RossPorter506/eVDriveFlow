@@ -46,8 +46,12 @@ class ProcessEvccCapabilityChallengeRequest(EVSEState):
         else:
             response.response_code = ResponseCodeType.FAILED
             logger.warn("EVCC Not Verified")
+        verify_time = validation_timer.lap()
         validation_timer.pause()
         
+        with open("verify_time.txt", 'a') as f:
+                f.write(str(verify_time) + '\n')
+
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()
         reaction.extra_data = extra_data

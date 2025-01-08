@@ -31,10 +31,19 @@ class ProcessSeccCapabilityChallengeRequest(EVSEState):
         extra_data = {}
         response = SeccCapabilityChallengeRes()
         validation_timer.start()
+        before_quote_time = validation_timer.lap()
         self._tpm_attest_contents(payload.challenge_nonce)
+        quote_time = validation_timer.lap()
         response.challenge_signature = self._get_tpm_signature()
         response.challenge_evidence = self._get_tpm_evidence()
+        attest_time = validation_timer.lap()
         validation_timer.pause()
+        with open("before_quote_time.txt", 'a') as f:
+                f.write(str(before_quote_time)+'\n')
+        with open("certify_time.txt", 'a') as f:
+                f.write(str(attest_time)+'\n')
+        with open("quote_time.txt", 'a') as f:
+                f.write(str(quote_time)+'\n')
         
         self.controller.data_model.evcc_supported_service_ids = payload.supported_service_ids
         self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids = payload.mandatory_if_mutally_supported_service_ids

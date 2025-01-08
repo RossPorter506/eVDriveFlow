@@ -24,4 +24,5 @@ HEREDOC
 tpm2_hash -C p -g sha256 -o ${THISDIR}/secc_evidence_hash.sha256 ${THISDIR}/secc_evidence.dat
 
 tpm2_nvwrite $NVRAM_INDEX -C p -i ${THISDIR}/secc_evidence_hash.sha256 # Write new value to index
-tpm2_nvwritelock -C p $NVRAM_INDEX # write lock until next reboot. We would additionally lock out platform too, but do this just in case.
+#tpm2_nvwritelock -C p $NVRAM_INDEX # write lock until next reboot. We would additionally lock out platform too, but do this just in case.
+
