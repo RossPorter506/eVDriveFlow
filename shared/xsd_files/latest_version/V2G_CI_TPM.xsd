@@ -18,7 +18,7 @@
 	<xs:element name="CapabilityEvidenceRes" type="CapabilityEvidenceResType"/>
 	<xs:complexType name="CapabilityEvidenceResType">
 		<xs:complexContent>
-			<xs:extension base="v2gci_ct:V2GRequestType">
+			<xs:extension base="v2gci_ct:V2GResponseType">
 				<xs:sequence>
 					<xs:element name="challenge_evidence" type="EvidenceType"/> <!-- TODO: Confirm Size/Type -->
 					<xs:element name="challenge_signature" type="SignatureType"/> <!-- TODO: Confirm Size/Type -->

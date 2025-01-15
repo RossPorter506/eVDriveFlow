@@ -29,6 +29,7 @@ class WaitForAttestationResponse(DcEVState):
             self.expected_hash = f.read()
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
+        logger.debug('Evidence and signature present: %s, %s', bool(payload.evidence), bool(payload.signature))
         if payload.evidence and payload.signature \
             and self._verify(payload.evidence, payload.signature): #attestation success, continue to schedule exchange
             logger.info('Attestation Successful. Continuing session.')
@@ -57,10 +58,13 @@ class WaitForAttestationResponse(DcEVState):
     def _verify(self, hsh: bytes, sig: bytes) -> bool:
         try:
             signature_correct = self.secc_public_key.verify(sig, self.controller.data_model.challenge_nonce + hsh)
+            logger.debug('Signature well-formed')
         except BadSignatureError:
+            logger.debug('Signature malformed')
             signature_correct = False
 
         hash_correct = (hsh == self.expected_hash)
 
+        logger.debug('Signature correct: %s, Hash correct: %s', signature_correct, hash_correct)
         return all([signature_correct, hash_correct])
     

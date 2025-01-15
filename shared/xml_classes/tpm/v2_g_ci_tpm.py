@@ -86,7 +86,7 @@ class CapabilityEvidenceReqType(V2GrequestType):
 
 
 @dataclass
-class CapabilityEvidenceResType(V2GrequestType):
+class CapabilityEvidenceResType(V2GresponseType):
     challenge_evidence: Optional[bytes] = field(
         default=None,
         metadata={

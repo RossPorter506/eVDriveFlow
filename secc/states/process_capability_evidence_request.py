@@ -24,7 +24,7 @@ from tests.timer import validation_timer
 import time, subprocess
 
 from ecdsa import SigningKey
-from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature, decode_dss_signature
 from hashlib import sha256
 
 class ProcessCapabilityEvidenceRequest(EVSEState):

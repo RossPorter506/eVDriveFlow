@@ -16,6 +16,7 @@ from evcc.states.ev_state import EVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ServiceSelectionReq, ServiceDetailReq, MessageHeaderType, SelectedServiceType, SelectedServiceListType, SessionStopReq, ChargingSessionType
 from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
+from shared.xml_classes.tpm import CapabilityEvidenceReq, ServiceIdlistType
 from shared.global_values import IAM_SERVICE_ID, TPM_SERVICE_ID
 from shared.log import logger
 from shared.tpm import _parse_and_check_tpms_attest_cert
@@ -25,6 +26,7 @@ from tests.timer import validation_timer
 import time
 
 from hashlib import sha256
+from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 
 class WaitForServiceDetailResponse(EVState):
     def __init__(self):
@@ -49,7 +51,7 @@ class WaitForServiceDetailResponse(EVState):
                         logger.debug("Parameter: " + str(parameter.name) + " " + str(parameter.finite_string))
                         bytestring += bytearray(int(parameter.name).to_bytes(2, "big"))
                         bytestring += bytearray.fromhex(parameter.finite_string)
-                print(bytestring.hex())
+                #print(bytestring.hex())
                 calculated_hash = sha256(bytestring).hexdigest()
                 logger.debug("Calculated hash: " + str(calculated_hash) + str(type(calculated_hash)))
                 self.controller.data_model.tpm_calculated_hash = calculated_hash
@@ -79,9 +81,17 @@ class WaitForServiceDetailResponse(EVState):
             request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         else: # we are moving on
             if self.controller.data_model.tpm_capability_challenge_accepted:
-                request = CapabiltyEvidenceReq()
+                request = CapabilityEvidenceReq()
                 reaction.msg_type = "TPM"
                 request.header = TpmMessageHeaderType(self.session_parameters.session_id, int(time.time()))
+                services = [service for service in self.controller.data_model.supported_service_ids.service_id]
+                vases = [service for service in self.controller.data_model.supported_vas_service_ids.service_id]
+                request.supported_service_ids = ServiceIdlistType(services + vases)
+                request.mandatory_if_mutally_supported_service_ids = ServiceIdlistType([service for service in self.controller.data_model.mandatory_if_mutually_supported_service_ids.service_id])
+                # Wait for evidence/signature to complete
+                self.controller.data_model.quote_process.wait()
+                request.challenge_evidence = self._get_tpm_evidence()
+                request.challenge_signature = self._get_tpm_signature()
             else:
                 request = ServiceSelectionReq()
                 # TODO: from the options in response, select one that is available
@@ -92,15 +102,6 @@ class WaitForServiceDetailResponse(EVState):
                     self.controller.data_model.using_IAM = False
                 request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
                 reaction.msg_type = "Common"
-                
-                services = [service for service in self.controller.data_model.supported_service_ids.service_id]
-                vases = [service for service in self.controller.data_model.supported_vas_service_ids.service_id]
-                request.supported_service_ids = ServiceIdlistType(services + vases)
-                request.mandatory_if_mutally_supported_service_ids = ServiceIdlistType([service for service in self.controller.data_model.mandatory_if_mutually_supported_service_ids.service_id])
-                
-                self.controller.data_model.quote_process.wait()
-                request.challenge_evidence = self._get_tpm_evidence()
-                request.challenge_signature = self._get_tpm_signature()
         
         reaction.message = request
         return reaction

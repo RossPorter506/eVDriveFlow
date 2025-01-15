@@ -15,7 +15,7 @@
 from evcc.states.ev_state import DcEVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 import time
-from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType
+from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType, SessionSetupReq
 from shared.xml_classes.tpm import CapabilityChallengeReq
 from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
 from shared.log import logger
@@ -35,8 +35,12 @@ class WaitForCapabilityChallengeResponse(DcEVState):
         reaction = SendMessage()
         validation_timer.start()
         self._tpm_start_attesting_contents(payload.challenge_nonce)
-        # TODO: Set up next message
+        request = SessionSetupReq()
+        session_id = "00000000".encode("ascii")
+        request.evccid = self.controller.data_model.evccid
+        request.header = MessageHeaderType(session_id, int(time.time()))
         reaction.message = request
+        reaction.msg_type = "Common"
         extra_data = {}
         reaction.extra_data = extra_data
         return reaction
