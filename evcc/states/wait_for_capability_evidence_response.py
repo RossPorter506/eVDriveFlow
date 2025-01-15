@@ -14,12 +14,14 @@
 
 from evcc.states.ev_state import DcEVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
-from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType, SessionSetupReq
+from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType, SessionSetupReq, ServiceSelectionReq, SelectedServiceType
 from shared.xml_classes.tpm import ResponseCodeType
 from shared.log import logger
+from shared.tpm import _parse_and_check_tpms_attest_cert
 
-import time
+import time, subprocess
 from ecdsa import VerifyingKey, BadSignatureError
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 
 class WaitForCapabilityEvidenceResponse(DcEVState):
     def __init__(self):
@@ -63,7 +65,7 @@ class WaitForCapabilityEvidenceResponse(DcEVState):
                 request.selected_vaslist = self.controller.data_model.selected_vaslist
             if self.controller.data_model.using_IAM is None:
                 self.controller.data_model.using_IAM = False
-            request.header = MessageHeaderType(session_id, int(time.time()))
+            request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         else: # attestation failed - EVCC possibly compromised
             logger.warn('EVCC capability attestation failed. Ending session.')
             self.controller.stop() # Signal rest of system to wind down

@@ -104,7 +104,7 @@ class EVSEEmulator(DcEVSEDataModel):
                                                         version_number_major=1, version_number_minor=0, priority=1)]
         self.authorization_services = [AuthorizationType.EIM]
         self.certificate_installation_service = False
-        self.energy_transfer_service_list = ServiceListType([ServiceType(6, False),ServiceType(60, False), ServiceType(600, False)])
+        self.energy_transfer_service_list = ServiceListType([ServiceType(6, False),])
         self.service_renegotiation_supported = False
         self.services = {"6": ServiceParameterListType([ParameterSetType(1,[
                                     ParameterType(name="Connector", int_value=2), 
@@ -145,7 +145,7 @@ class EVSEEmulator(DcEVSEDataModel):
         self.evsemaximum_discharge_power = self.evsemaximum_charge_power
         self.evseminimum_discharge_power = self.evseminimum_charge_power
 
-    def _calc_service_hashes(self, services, vaslist, energy_transfer_service_list) -> ServiceParameterListType:
+    def _calc_service_hashes(self, services, energy_transfer_service_list, vaslist) -> ServiceParameterListType:
         parameters: List[ParameterType] = []
         for ID,serviceContents in self.services.items():
             ID = int(ID)
