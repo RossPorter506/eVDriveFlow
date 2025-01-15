@@ -89,7 +89,7 @@ class EVSESession(CommunicationSession):
             ["next_message", service_discovery_state, service_detail_state],
             ["next_message", service_detail_state, service_selection_state,       lambda: not self.controller.data_model.tpm_capability_challenge_accepted],
             ["next_message", service_detail_state, tpm_capability_evidence_state, lambda:     self.controller.data_model.tpm_capability_challenge_accepted],
-            ["next_message", tpm_capability_evidence_state, service_selection_state]
+            ["next_message", tpm_capability_evidence_state, service_selection_state],
             ["next_message", service_selection_state, charge_parameter_discovery_state],
             ["next_message", charge_parameter_discovery_state, schedule_exchange_state, lambda: not self.controller.data_model.IAM_Module.enabled],
             ["next_message", charge_parameter_discovery_state, attestation_state,       lambda:     self.controller.data_model.IAM_Module.enabled],

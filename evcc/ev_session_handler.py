@@ -47,6 +47,7 @@ class EVSessionHandler(SessionHandler):
         interface = "%" + self.interface
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        print(udp_protocol.tcp_server_address, udp_protocol.tcp_server_port)
         tcp_transport, tcp_protocol = \
             get_tcp_client(udp_protocol.tcp_server_address, udp_protocol.tcp_server_port, self)
 

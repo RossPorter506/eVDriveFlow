@@ -16,7 +16,7 @@ from evcc.states.ev_state import DcEVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 import time
 from shared.xml_classes.common_messages import SessionStopReq, MessageHeaderType, ChargingSessionType
-from shared.xml_classes.tpm import EvccCapabilityChallengeReq
+from shared.xml_classes.tpm import CapabilityChallengeReq
 from shared.xml_classes.tpm import MessageHeaderType as TpmMessageHeaderType
 from shared.log import logger
 from tests.timer import validation_timer

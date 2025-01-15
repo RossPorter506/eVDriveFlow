@@ -32,7 +32,7 @@ class WaitForCapabilityEvidenceResponse(DcEVState):
             logger.info('EVCC Capability Evidence Accepted.')
             
             # TPM quote untampered
-            evidence_ok = self._verify(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.secc_challenge_nonce):
+            evidence_ok = self._verify(payload.challenge_signature, payload.challenge_evidence, self.controller.data_model.secc_challenge_nonce)
             
             # Calculated service hash matches hash in TPM quote
             services_ok = _parse_and_check_tpms_attest_cert(payload.challenge_evidence, self.controller.data_model.secc_challenge_nonce, self.controller.data_model.tpm_calculated_hash)

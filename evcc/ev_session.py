@@ -66,7 +66,7 @@ class EVSession(CommunicationSession):
         welding_detection_state = WaitForDcWeldingDetectionResponse()
         dc_charge_loop_state = WaitForDcChargeLoopResponse()
         session_stop_state = WaitForSessionStopResponse()
-        states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, tpm_secc_attest_state, tpm_evcc_attest_state, authorization_state,
+        states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, tpm_challenge_state, tpm_evidence_state, authorization_state,
                   service_discovery_state, service_detail_state, service_selection_state,
                   charge_parameter_discovery_state, iam_attest_state, schedule_exchange_state, cable_check_state, pre_charge_state,
                   welding_detection_state, power_delivery_state, dc_charge_loop_state, session_stop_state]
