@@ -16,11 +16,7 @@ from evcc.states.ev_state import DcEVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 import time, os
 
-from shared.xml_classes.common_messages import ScheduleExchangeReq
-from shared.xml_classes.common_messages import MessageHeaderType as MessageHeaderTypeForCommon
-from shared.xml_classes.iam import AttestationReq, MessageHeaderType
-
-IAM_NONCE_SIZE=8 # TODO: Figure out where to put this
+from shared.xml_classes.common_messages import ScheduleExchangeReq, MessageHeaderType
 
 class WaitForDcChargeParameterDiscoveryResponse(DcEVState):
     def __init__(self):
@@ -34,18 +30,11 @@ class WaitForDcChargeParameterDiscoveryResponse(DcEVState):
 
         extra_data = {}
         reaction = SendMessage()
-        if self.controller.data_model.using_IAM:
-            request = AttestationReq()
-            self.controller.data_model.challenge_nonce = os.urandom(IAM_NONCE_SIZE)
-            request.challenge_nonce = self.controller.data_model.challenge_nonce
-            reaction.msg_type = "IAM"
-            request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
-        else:
-            request = ScheduleExchangeReq()
-            request.maximum_supporting_points = 1024
-            request.dynamic_sereq_control_mode = self.controller.data_model.get_dynamic_sereq_control_mode()
-            reaction.msg_type = "Common"
-            request.header = MessageHeaderTypeForCommon(self.session_parameters.session_id, int(time.time()))
+        request = ScheduleExchangeReq()
+        request.maximum_supporting_points = 1024
+        request.dynamic_sereq_control_mode = self.controller.data_model.get_dynamic_sereq_control_mode()
+        reaction.msg_type = "Common"
+        request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         
         reaction.message = request
         reaction.extra_data = extra_data

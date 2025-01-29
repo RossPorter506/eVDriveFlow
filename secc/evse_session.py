@@ -28,7 +28,8 @@ from secc.states.process_session_setup_request import ProcessSessionSetupRequest
 from secc.states.process_session_stop_request import ProcessSessionStopRequest
 from secc.states.process_supported_app_protocol_request import ProcessSupportedAppProtocolRequest
 from secc.states.process_dc_welding_detection_request import ProcessDcWeldingDetectionRequest
-from secc.states.process_attestation_request import ProcessAttestationRequest
+from secc.states.process_attestation_challenge_request import ProcessAttestationChallengeRequest
+from secc.states.process_attestation_evidence_request import ProcessAttestationEvidenceRequest
 from secc.states.process_capability_challenge_request import ProcessCapabilityChallengeRequest
 from secc.states.process_capability_evidence_request import ProcessCapabilityEvidenceRequest
 from shared.session import CommunicationSession
@@ -64,7 +65,8 @@ class EVSESession(CommunicationSession):
         service_detail_state = ProcessServiceDetailRequest()
         service_selection_state = ProcessServiceSelectionRequest()
         charge_parameter_discovery_state = ProcessDcChargeParameterDiscoveryRequest()
-        attestation_state = ProcessAttestationRequest()
+        attestation_challenge_state = ProcessAttestationChallengeRequest()
+        attestation_evidence_state = ProcessAttestationEvidenceRequest()
         schedule_exchange_state = ProcessScheduleExchangeRequest()
         cable_check_state = ProcessDcCableCheckRequest()
         pre_charge_state = ProcessDcPreChargeRequest()
@@ -74,7 +76,7 @@ class EVSESession(CommunicationSession):
         session_stop_state = ProcessSessionStopRequest()
         states = [supported_app_protocol_state, session_setup_state, authorization_setup_state, tpm_capability_challenge_state, tpm_capability_evidence_state, authorization_state,
                   service_discovery_state, service_detail_state, service_selection_state,
-                  charge_parameter_discovery_state, attestation_state, schedule_exchange_state, cable_check_state, pre_charge_state,
+                  charge_parameter_discovery_state, attestation_challenge_state, attestation_evidence_state, schedule_exchange_state, cable_check_state, pre_charge_state,
                   welding_detection_state, power_delivery_state, dc_charge_loop_state, session_stop_state]
         exitable_states = states[2:-3]
         # Transitions are defined like this: trigger, src, dst, conditions, unless, before, after, prepare
@@ -90,10 +92,11 @@ class EVSESession(CommunicationSession):
             ["next_message", service_detail_state, service_selection_state,       lambda: not self.controller.data_model.tpm_capability_challenge_accepted],
             ["next_message", service_detail_state, tpm_capability_evidence_state, lambda:     self.controller.data_model.tpm_capability_challenge_accepted],
             ["next_message", tpm_capability_evidence_state, service_selection_state],
-            ["next_message", service_selection_state, charge_parameter_discovery_state],
-            ["next_message", charge_parameter_discovery_state, schedule_exchange_state, lambda: not self.controller.data_model.IAM_Module.enabled],
-            ["next_message", charge_parameter_discovery_state, attestation_state,       lambda:     self.controller.data_model.IAM_Module.enabled],
-            ["next_message", attestation_state, schedule_exchange_state],
+            ["next_message", service_selection_state, charge_parameter_discovery_state, lambda: not self.controller.data_model.IAM_Module.enabled],
+            ["next_message", service_selection_state, attestation_challenge_state,      lambda:     self.controller.data_model.IAM_Module.enabled],
+            ["next_message", attestation_challenge_state, attestation_evidence_state],
+            ["next_message", attestation_evidence_state, charge_parameter_discovery_state],
+            ["next_message", charge_parameter_discovery_state, schedule_exchange_state],
             ["next_message", schedule_exchange_state, cable_check_state],
             ["next_message", cable_check_state, pre_charge_state],
             ["next_message", pre_charge_state, power_delivery_state],

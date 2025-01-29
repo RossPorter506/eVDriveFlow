@@ -9,7 +9,7 @@ __NAMESPACE__ = "urn:iso:std:iso:15118:-20:IAMMessages"
 
 
 @dataclass
-class AttestationReqType(V2GrequestType):
+class AttestationChallengeReqType(V2GrequestType):
     challenge_nonce: Optional[bytes] = field(
         default=None,
         metadata={
@@ -23,7 +23,21 @@ class AttestationReqType(V2GrequestType):
 
 
 @dataclass
-class AttestationResType(V2GresponseType):
+class AttestationChallengeResType(V2GresponseType):
+    challenge_nonce: Optional[bytes] = field(
+        default=None,
+        metadata={
+            "type": "Element",
+            "namespace": "urn:iso:std:iso:15118:-20:IAMMessages",
+            "required": True,
+            "length": 8,
+            "format": "base16",
+        }
+    )
+
+
+@dataclass
+class AttestationEvidenceReqType(V2GrequestType):
     evidence: Optional[bytes] = field(
         default=None,
         metadata={
@@ -47,12 +61,48 @@ class AttestationResType(V2GresponseType):
 
 
 @dataclass
-class AttestationReq(AttestationReqType):
+class AttestationEvidenceResType(V2GresponseType):
+    evidence: Optional[bytes] = field(
+        default=None,
+        metadata={
+            "type": "Element",
+            "namespace": "urn:iso:std:iso:15118:-20:IAMMessages",
+            "required": True,
+            "length": 32,
+            "format": "base16",
+        }
+    )
+    signature: Optional[bytes] = field(
+        default=None,
+        metadata={
+            "type": "Element",
+            "namespace": "urn:iso:std:iso:15118:-20:IAMMessages",
+            "required": True,
+            "length": 64,
+            "format": "base16",
+        }
+    )
+
+
+@dataclass
+class AttestationChallengeReq(AttestationChallengeReqType):
     class Meta:
         namespace = "urn:iso:std:iso:15118:-20:IAMMessages"
 
 
 @dataclass
-class AttestationRes(AttestationResType):
+class AttestationChallengeRes(AttestationChallengeResType):
+    class Meta:
+        namespace = "urn:iso:std:iso:15118:-20:IAMMessages"
+
+
+@dataclass
+class AttestationEvidenceReq(AttestationEvidenceReqType):
+    class Meta:
+        namespace = "urn:iso:std:iso:15118:-20:IAMMessages"
+
+
+@dataclass
+class AttestationEvidenceRes(AttestationEvidenceResType):
     class Meta:
         namespace = "urn:iso:std:iso:15118:-20:IAMMessages"
