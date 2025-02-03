@@ -34,7 +34,7 @@ class ProcessServiceSelectionRequest(EVSEState):
                     self.controller.data_model.IAM_Module.configure(service.parameter_set_id)
         
         if self.controller.data_model.tpm_capability_challenge_accepted:
-            validation_timer.resume()
+            validation_timer.start()
             # Use the EVCC's MiMS list to calculate mutually supported mandatory services
             mutual_mandatory_service_ids = []
             if (self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids is not None):
@@ -48,6 +48,8 @@ class ProcessServiceSelectionRequest(EVSEState):
                 if service.service_id in mutual_mandatory_service_ids:
                     mutual_mandatory_service_ids.remove(service_id)
             
+            validation_timer.pause()
+            
             if mutual_mandatory_service_ids:
                 # Mutually supported mandatory service not selected
                 logger.warn("At least one mutually supported mandatory service was not enabled: " + str(mutual_mandatory_service_ids))
@@ -60,10 +62,6 @@ class ProcessServiceSelectionRequest(EVSEState):
                 reaction.message = response
                 reaction.msg_type = "Common"
                 return reaction
-            
-            vtime = validation_timer.stop()
-            with open("secc_validation_time.txt", 'a') as f:
-                f.write(str(vtime) + '\n')
         
         extra_data = {}
         response = ServiceSelectionRes()

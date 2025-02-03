@@ -37,7 +37,7 @@ class WaitForServiceDiscoveryResponse(EVState):
         if payload.vaslist is not None:
             for vas_service in payload.vaslist.service:
                 if str(vas_service.service_id) in self.controller.data_model.supported_vas_service_ids.service_id:
-                    logger.debug("Adding", vas_service.service_id, "to list of services to detail")
+                    logger.debug("Adding", str(vas_service.service_id), "to list of services to detail")
                     self.controller.data_model.vas_services_to_detail.append(vas_service.service_id)
         reaction = SendMessage()
         reaction.extra_data = extra_data

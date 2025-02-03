@@ -42,7 +42,7 @@ class ProcessCapabilityEvidenceRequest(EVSEState):
         
         self.controller.data_model.evcc_supported_service_ids = payload.supported_service_ids
         self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids = payload.mandatory_if_mutally_supported_service_ids
-        #validation_timer.resume()
+        validation_timer.resume()
         calculated_hash = self.calculate_evcc_hash_from_evidence()
         structure_ok = _parse_and_check_tpms_attest_cert(payload.challenge_evidence, self.controller.data_model.evcc_challenge_nonce, calculated_hash)
         if structure_ok:
@@ -54,11 +54,15 @@ class ProcessCapabilityEvidenceRequest(EVSEState):
         if not (structure_ok and value_ok):
             response.response_code = ResponseCodeType.FAILED
             logger.warn("EVCC Not Verified")
-        #validation_timer.pause()
         
         self.controller.data_model.quote_process.wait()
+        
         response.challenge_signature = self._get_tpm_signature()
         response.challenge_evidence = self._get_tpm_evidence()
+        
+        vtime = validation_timer.stop()
+        with open("secc_validation_time.txt", 'a') as f:
+            f.write(str(vtime) + '\n')
         
         reaction.message = response
         return reaction
