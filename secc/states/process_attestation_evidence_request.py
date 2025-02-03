@@ -18,8 +18,9 @@ from shared.xml_classes.common_messages import ResponseCodeType
 from shared.xml_classes.iam import AttestationEvidenceRes, MessageHeaderType
 import time
 
-from ecdsa import SigningKey
+from ecdsa import VerifyingKey
 from IAM.IAM_TEE import hash_sign_software
+from shared.log import logger
 
 class ProcessAttestationEvidenceRequest(EVSEState):
     def __init__(self):

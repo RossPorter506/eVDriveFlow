@@ -16,6 +16,7 @@ from evcc.states.ev_state import EVState
 from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ResponseCodeType, SessionStopReq, ChargingSessionType
 from shared.xml_classes.dc import MessageHeaderType
+from shared.xml_classes.iam import AttestationChallengeReq, MessageHeaderType as MessageHeaderTypeIAM
 from shared.global_values import IAM_NONCE_SIZE
 
 import time, os
@@ -27,6 +28,8 @@ class WaitForServiceSelectionResponse(EVState):
         super(WaitForServiceSelectionResponse, self).__init__(name="WaitForServiceSelectionRes")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
+        extra_data = {}
+        reaction = SendMessage()
         if payload.response_code == ResponseCodeType.FAILED:
             self.controller.stop()
             request = SessionStopReq()
@@ -35,8 +38,7 @@ class WaitForServiceSelectionResponse(EVState):
             request.evtermination_code = "Failure during service selection"
             request.evtermination_explanation = "Failure during service selection"
             request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
-            reaction = SendMessage()
-            reaction.extra_data = {}
+            reaction.extra_data = extra_data
             reaction.message = request
             reaction.msg_type = "Common"
             return reaction
@@ -46,15 +48,14 @@ class WaitForServiceSelectionResponse(EVState):
             self.controller.data_model.challenge_nonce = os.urandom(IAM_NONCE_SIZE)
             request.challenge_nonce = self.controller.data_model.challenge_nonce
             reaction.msg_type = "IAM"
-            request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
+            request.header = MessageHeaderTypeIAM(self.session_parameters.session_id, int(time.time()))
         else:
-            extra_data = {}
             request = DcChargeParameterDiscoveryReq()
             request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
             # TODO: test based on service selected
             request.bpt_dc_cpdreq_energy_transfer_mode = self.controller.data_model.get_bpt_dc_cpdreq_energy_transfer_mode()
-            reaction = SendMessage()
-            reaction.extra_data = extra_data
-            reaction.message = request
             reaction.msg_type = "DC"
-            return reaction
+        
+        reaction.extra_data = extra_data
+        reaction.message = request
+        return reaction

@@ -32,7 +32,7 @@ class WaitForAttestationChallengeResponse(DcEVState):
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
         request = AttestationEvidenceReq()
-        (request.evidence, request.signature) = hash_sign_software(payload.nonce)
+        (request.evidence, request.signature) = hash_sign_software(payload.challenge_nonce)
         
         request.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()

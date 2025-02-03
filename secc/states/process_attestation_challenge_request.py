@@ -17,6 +17,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.common_messages import ResponseCodeType
 from shared.xml_classes.iam import AttestationChallengeRes, MessageHeaderType
 from shared.global_values import IAM_NONCE_SIZE
+from IAM.IAM_TEE import hash_sign_software
 import time, os
 
 from ecdsa import SigningKey
@@ -33,7 +34,7 @@ class ProcessAttestationChallengeRequest(EVSEState):
         # There could be issues with missing packets while we're in the secure world, though ISO 15118-20 is built on TCP, so at worst it should require a retransmission if we miss the packet...
         # TODO: Implement and test async attestation
         attestation_timer.start()
-        self.controller.attestation_info = hash_sign_software(payload.nonce.hex())
+        self.controller.attestation_info = hash_sign_software(payload.challenge_nonce.hex())
         atime = attestation_timer.stop()
         with open("../attestation.txt", 'a') as f:
             f.write(str(atime)+'\n')
@@ -42,7 +43,7 @@ class ProcessAttestationChallengeRequest(EVSEState):
         extra_data = {}
         response = AttestationChallengeRes()
         attestation_timer.start()
-        response.nonce = self.controller.challenge_nonce
+        response.challenge_nonce = self.controller.challenge_nonce
         response.response_code = ResponseCodeType.OK
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()
