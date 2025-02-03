@@ -34,7 +34,7 @@ class ProcessServiceSelectionRequest(EVSEState):
                     self.controller.data_model.IAM_Module.configure(service.parameter_set_id)
         
         if self.controller.data_model.tpm_capability_challenge_accepted:
-            validation_timer.start()
+            validation_timer.resume()
             # Use the EVCC's MiMS list to calculate mutually supported mandatory services
             mutual_mandatory_service_ids = []
             if (self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids is not None):

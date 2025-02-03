@@ -34,16 +34,16 @@ class ProcessAttestationChallengeRequest(EVSEState):
         # There could be issues with missing packets while we're in the secure world, though ISO 15118-20 is built on TCP, so at worst it should require a retransmission if we miss the packet...
         # TODO: Implement and test async attestation
         attestation_timer.start()
-        self.controller.attestation_info = hash_sign_software(payload.challenge_nonce.hex())
+        self.controller.data_model.attestation_info = hash_sign_software(payload.challenge_nonce.hex())
         atime = attestation_timer.stop()
         with open("../attestation.txt", 'a') as f:
             f.write(str(atime)+'\n')
         
-        self.controller.challenge_nonce = os.urandom(IAM_NONCE_SIZE)
+        self.controller.data_model.challenge_nonce = os.urandom(IAM_NONCE_SIZE)
         extra_data = {}
         response = AttestationChallengeRes()
         attestation_timer.start()
-        response.challenge_nonce = self.controller.challenge_nonce
+        response.challenge_nonce = self.controller.data_model.challenge_nonce
         response.response_code = ResponseCodeType.OK
         response.header = MessageHeaderType(self.session_parameters.session_id, int(time.time()))
         reaction = SendMessage()

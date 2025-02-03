@@ -17,6 +17,7 @@ from shared.reaction_message import ReactionToIncomingMessage, SendMessage
 from shared.xml_classes.tpm import CapabilityChallengeRes, MessageHeaderType, ResponseCodeType
 from shared.global_values import CAPABILITY_NONCE_SIZE
 from shared.log import logger
+from tests.timer import validation_timer
 
 from hashlib import sha256
 import time, os, subprocess
@@ -27,7 +28,9 @@ class ProcessCapabilityChallengeRequest(EVSEState):
         super(ProcessCapabilityChallengeRequest, self).__init__(name="ProcessCapabilityChallengeReq")
 
     def process_payload(self, payload) -> ReactionToIncomingMessage:
+        validation_timer.start()
         self._tpm_start_attesting_contents(payload.challenge_nonce)
+        validation_timer.pause()
         extra_data = {}
         response = CapabilityChallengeRes()
         

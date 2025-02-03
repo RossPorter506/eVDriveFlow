@@ -18,7 +18,7 @@ from shared.xml_classes.common_messages import ResponseCodeType
 from shared.xml_classes.iam import AttestationEvidenceRes, MessageHeaderType
 import time
 
-from ecdsa import VerifyingKey
+from ecdsa import VerifyingKey, BadSignatureError
 from IAM.IAM_TEE import hash_sign_software
 from shared.log import logger
 
@@ -34,7 +34,7 @@ class ProcessAttestationEvidenceRequest(EVSEState):
         # TODO: Verify EVCC evidence
         extra_data = {}
         response = AttestationEvidenceRes()
-        (response.evidence, response.signature) = self.controller.attestation_info
+        (response.evidence, response.signature) = self.controller.data_model.attestation_info
         
         if payload.evidence and payload.signature \
             and self._verify(payload.evidence, payload.signature): #attestation success, continue to schedule exchange
