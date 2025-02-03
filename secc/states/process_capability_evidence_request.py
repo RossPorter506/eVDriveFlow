@@ -70,7 +70,7 @@ class ProcessCapabilityEvidenceRequest(EVSEState):
     def _verify_evcc_signature(self, sig: bytes, message: bytes, nonce: bytes) -> bool:
         r = int.from_bytes(sig[0:32], "big")
         s = int.from_bytes(sig[32:64], "big")
-        print("@@@@", r,s)
+        #print("@@@@", r,s)
         sig_der = encode_dss_signature(r, s)
         
         open("sig_file", 'wb').write(sig_der)
@@ -93,28 +93,28 @@ class ProcessCapabilityEvidenceRequest(EVSEState):
         self.controller.data_model.evcc_supported_service_ids.service_id.sort()
         supported_services = bytearray()
         for service_id in self.controller.data_model.evcc_supported_service_ids.service_id:
-            print("ID:", service_id)
+            #print("ID:", service_id)
             supported_services += service_id.to_bytes(2, "big")
-        print(supported_services)
+        #print(supported_services)
         
         MiMS_services = bytearray()
         self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids.service_id.sort()
         for service_id in self.controller.data_model.evcc_mandatory_if_mutually_supported_service_ids.service_id:
-            print("MID:", service_id)
+            #print("MID:", service_id)
             MiMS_services += service_id.to_bytes(2, "big")
-        print(MiMS_services)
+        #print(MiMS_services)
         
         supported_app_protocols = bytearray()
         self.controller.data_model.evcc_supported_app_protocols.sort(key = lambda a: a.protocol_namespace)
         for protocol in self.controller.data_model.evcc_supported_app_protocols:
-            print("APP:", protocol)
+            #print("APP:", protocol)
             supported_app_protocols += bytearray(protocol.protocol_namespace.encode("UTF-8"))
             supported_app_protocols += protocol.version_number_major.to_bytes(4, "big")
             supported_app_protocols += protocol.version_number_minor.to_bytes(4, "big")
-        print(supported_app_protocols)
+        #print(supported_app_protocols)
         
         hsh = sha256(supported_services + MiMS_services + supported_app_protocols).hexdigest()
-        print(hsh)
+        #print(hsh)
         return hsh
 
     def _get_tpm_signature(self) -> bool:
